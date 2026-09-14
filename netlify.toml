@@ -1,5 +1,5 @@
 [build]
-  base = "PWA/OpsmanagerApp"
+  base = "PWA/BusinessFieldOps"
   publish = "dist"
   command = "pnpm run icons --only-pwa && pnpm run build"
 

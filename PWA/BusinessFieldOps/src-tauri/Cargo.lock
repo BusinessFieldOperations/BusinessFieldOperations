@@ -2276,7 +2276,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "opsmanagerapp"
+name = "businessfieldops"
 version = "0.1.0"
 dependencies = [
  "serde",

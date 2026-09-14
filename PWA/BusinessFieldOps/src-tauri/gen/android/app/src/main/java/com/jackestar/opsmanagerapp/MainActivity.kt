@@ -1,4 +1,4 @@
-package com.jackestar.opsmanagerapp
+package com.jackestar.businessfieldops
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge

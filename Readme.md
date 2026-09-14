@@ -1,5 +1,5 @@
 <div align="center">
-<h3>Business Tracker</h3>
+<h3>Business Field Operations</h3>
 <img src="src/favicon.svg" width="100" alt="logo" title="icon"/>
 <hr/>
 
