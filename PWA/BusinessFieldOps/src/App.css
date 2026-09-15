@@ -181,7 +181,8 @@ form .error-message {
 }
 
 .dialog-panel {
-  background-color: rgb(var(--mdui-color-surface-dark));
+  background-color: rgb(var(--mdui-color-surface));
+  color: rgb(var(--mdui-color-on-surface));
   padding: 1.5em;
   box-sizing: border-box;
   /* max-width: 700px; */
@@ -217,7 +218,7 @@ form .error-message {
 }
 
 .feedback-message.error {
-  background-color: rgb(var(--mdui-color-error-light));
+  background-color: rgb(var(--mdui-color-error));
   color: rgb(var(--mdui-color-on-error));
 }
 
