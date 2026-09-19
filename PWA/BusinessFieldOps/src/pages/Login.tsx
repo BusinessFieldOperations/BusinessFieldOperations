@@ -1,9 +1,9 @@
-import { route } from "preact-router";
-import { useEffect, useState } from 'preact/hooks';
-import "../App.css";
-import "mdui/components/card.js";
-import "mdui/components/text-field.js";
-import { supabase } from '../lib/supabase';
+import {route} from 'preact-router';
+import {useEffect, useState} from 'preact/hooks';
+import '../App.css';
+import 'mdui/components/card.js';
+import 'mdui/components/text-field.js';
+import {supabase} from '../lib/supabase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,7 +14,7 @@ export default function Login() {
   useEffect(() => {
     let active = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({data: {session}}) => {
       if (!active || !session) return;
       route('/dashboard', true);
     });
@@ -29,7 +29,7 @@ export default function Login() {
     setLoading(true);
     setErrorMsg('');
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const {error} = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -47,7 +47,15 @@ export default function Login() {
       <h1 class="main-title">{import.meta.env.VITE_BUSINESS_NAME}</h1>
       <mdui-card variant="elevated" class="box">
         <h2 class="main-title">Login</h2>
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+        <form
+          onSubmit={handleLogin}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            width: '100%',
+          }}
+        >
           <mdui-text-field
             icon="person"
             variant="outlined"
@@ -56,8 +64,7 @@ export default function Login() {
             value={email}
             onInput={(e: any) => setEmail(e.target.value)}
             required
-          >
-          </mdui-text-field>
+          ></mdui-text-field>
 
           <mdui-text-field
             icon="key"
@@ -68,12 +75,16 @@ export default function Login() {
             onInput={(e: any) => setPassword(e.target.value)}
             required
             toggle-password
-          >
-          </mdui-text-field>
+          ></mdui-text-field>
 
           {errorMsg && <div class="error-message">{errorMsg}</div>}
 
-          <mdui-button type="submit" variant="outlined" class="login-button" loading={loading ? true : undefined}>
+          <mdui-button
+            type="submit"
+            variant="outlined"
+            class="login-button"
+            loading={loading ? true : undefined}
+          >
             {loading ? 'Signing in...' : 'Login'}
           </mdui-button>
         </form>

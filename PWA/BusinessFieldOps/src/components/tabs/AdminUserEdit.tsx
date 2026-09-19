@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'preact/hooks';
+import {useEffect, useState} from 'preact/hooks';
 import 'mdui/components/text-field.js';
 import 'mdui/components/button.js';
 import 'mdui/components/select.js';
 import 'mdui/components/menu-item.js';
-import { supabase } from '../../lib/supabase';
+import {supabase} from '../../lib/supabase';
 
 type UserRole = 'merchant' | 'promoter' | 'administrator';
 
-type Feedback = { type: 'success' | 'error'; text: string };
+type Feedback = {type: 'success' | 'error'; text: string};
 
 interface UserItem {
   id: string;
@@ -38,7 +38,11 @@ export default function AdminUserEdit({
     setLastName(user.last_name);
     setIsActive(Boolean(user.is_active));
 
-    if (user.role === 'merchant' || user.role === 'promoter' || user.role === 'administrator') {
+    if (
+      user.role === 'merchant' ||
+      user.role === 'promoter' ||
+      user.role === 'administrator'
+    ) {
       setRole(user.role);
     } else {
       setRole('promoter');
@@ -54,12 +58,15 @@ export default function AdminUserEdit({
     const trimmedLastName = lastName.trim();
 
     if (!trimmedFirstName || !trimmedLastName) {
-      setFeedbackMsg({ type: 'error', text: 'First name and last name are required.' });
+      setFeedbackMsg({
+        type: 'error',
+        text: 'First name and last name are required.',
+      });
       setLoading(false);
       return;
     }
 
-    const { data, error } = await supabase
+    const {data, error} = await supabase
       .from('profiles')
       .update({
         first_name: trimmedFirstName,
@@ -72,7 +79,7 @@ export default function AdminUserEdit({
       .single();
 
     if (error) {
-      setFeedbackMsg({ type: 'error', text: error.message });
+      setFeedbackMsg({type: 'error', text: error.message});
     } else if (data) {
       const msg = {
         type: 'success' as const,
@@ -137,12 +144,18 @@ export default function AdminUserEdit({
         </mdui-select>
 
         {feedbackMsg && (
-          <div class={`feedback-message ${feedbackMsg.type === 'error' ? 'error' : 'success'}`}>
+          <div
+            class={`feedback-message ${feedbackMsg.type === 'error' ? 'error' : 'success'}`}
+          >
             {feedbackMsg.text}
           </div>
         )}
 
-        <mdui-button type="submit" variant="filled" loading={loading ? true : undefined}>
+        <mdui-button
+          type="submit"
+          variant="filled"
+          loading={loading ? true : undefined}
+        >
           Save Changes
         </mdui-button>
       </form>

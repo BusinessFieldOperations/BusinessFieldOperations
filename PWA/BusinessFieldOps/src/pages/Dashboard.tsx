@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'preact/hooks';
-import { route } from "preact-router";
-import "../App.css";
-import "mdui/components/circular-progress.js";
-import { supabase } from '../lib/supabase';
+import {useState, useEffect} from 'preact/hooks';
+import {route} from 'preact-router';
+import '../App.css';
+import 'mdui/components/circular-progress.js';
+import {supabase} from '../lib/supabase';
 
 // Import the role-specific dashboards
 import AdminDashboard from '../components/AdminDashboard';
@@ -18,10 +18,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchUserProfile() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {user},
+      } = await supabase.auth.getUser();
 
       if (user) {
-        const { data, error } = await supabase
+        const {data, error} = await supabase
           .from('profiles')
           .select('role, first_name, last_name')
           .eq('id', user.id)
@@ -52,10 +54,16 @@ export default function Dashboard() {
   if (role === 'promoter') return <PromoterDashboard userName={Name} />;
 
   // Fallback if role is unknown or missing
-  return <div style={{ padding: '24px' }}>
-    <p>Error: Role not assigned. Contact administrator.</p>
-    <mdui-button icon="chevron_right" variant="outlined" onClick={() => route("/login")}>
-      Go to Login
-    </mdui-button>
-  </div>;
+  return (
+    <div style={{padding: '24px'}}>
+      <p>Error: Role not assigned. Contact administrator.</p>
+      <mdui-button
+        icon="chevron_right"
+        variant="outlined"
+        onClick={() => route('/login')}
+      >
+        Go to Login
+      </mdui-button>
+    </div>
+  );
 }

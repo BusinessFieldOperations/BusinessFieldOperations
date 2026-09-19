@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import {useState} from 'preact/hooks';
 import DashboardLayout from './DashboardLayout';
 
 import AdminHome from './tabs/AdminHome';
@@ -10,14 +10,14 @@ interface Props {
   userName: string;
 }
 
-export default function AdminDashboard({ userName }: Props) {
+export default function AdminDashboard({userName}: Props) {
   const [activeTab, setActiveTab] = useState('home');
 
   const navItems = [
-    { value: 'home', icon: 'home', label: 'Home' },
-    { value: 'reports', icon: 'analytics', label: 'Reports' },
-    { value: 'clients', icon: 'people', label: 'Clients' },
-    { value: 'users', icon: 'manage_accounts', label: 'Users' }
+    {value: 'home', icon: 'home', label: 'Home'},
+    {value: 'reports', icon: 'analytics', label: 'Reports'},
+    {value: 'clients', icon: 'people', label: 'Clients'},
+    {value: 'users', icon: 'manage_accounts', label: 'Users'},
   ];
 
   return (
@@ -26,7 +26,13 @@ export default function AdminDashboard({ userName }: Props) {
       onTabChange={setActiveTab}
       navItems={navItems}
     >
-      {activeTab === 'home' && <AdminHome userName={userName} role="administrator" onTabChange={setActiveTab} />}
+      {activeTab === 'home' && (
+        <AdminHome
+          userName={userName}
+          role="administrator"
+          onTabChange={setActiveTab}
+        />
+      )}
       {activeTab === 'reports' && <AdminReports />}
       {activeTab === 'clients' && <AdminClients />}
       {activeTab === 'users' && <AdminUsers />}

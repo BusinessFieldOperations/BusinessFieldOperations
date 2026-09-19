@@ -1,10 +1,10 @@
-import { Router, Route, route } from "preact-router";
-import { useEffect, useState } from 'preact/hooks';
-import "./App.css";
+import {Router, Route, route} from 'preact-router';
+import {useEffect, useState} from 'preact/hooks';
+import './App.css';
 
-import { supabase } from './lib/supabase';
-import Welcome from "./pages/Welcome";
-import Login from "./pages/Login";
+import {supabase} from './lib/supabase';
+import Welcome from './pages/Welcome';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 
 function App() {
@@ -20,15 +20,19 @@ function App() {
     };
 
     // Check the current session on first load
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
+    supabase.auth
+      .getSession()
+      .then(({data: {session}}) => {
         if (!active) return;
 
         if (session) {
           if (window.location.pathname !== '/dashboard') {
             route('/dashboard', true);
           }
-        } else if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+        } else if (
+          window.location.pathname !== '/login' &&
+          window.location.pathname !== '/'
+        ) {
           route('/login', true); // Replace history state so they can't hit "Back"
         }
 
@@ -39,12 +43,17 @@ function App() {
       });
 
     // Listen for authentication state changes (e.g., token expires, or user logs out)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: {subscription},
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         if (window.location.pathname !== '/dashboard') {
           route('/dashboard', true);
         }
-      } else if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+      } else if (
+        window.location.pathname !== '/login' &&
+        window.location.pathname !== '/'
+      ) {
         route('/login', true);
       }
     });

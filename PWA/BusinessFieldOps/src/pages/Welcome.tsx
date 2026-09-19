@@ -1,8 +1,8 @@
-import { route } from "preact-router";
-import { useEffect, useState } from 'preact/hooks';
-import "mdui/components/button.js";
-import "../App.css";
-import { supabase } from '../lib/supabase';
+import {route} from 'preact-router';
+import {useEffect, useState} from 'preact/hooks';
+import 'mdui/components/button.js';
+import '../App.css';
+import {supabase} from '../lib/supabase';
 
 export default function Welcome() {
   const [hasSession, setHasSession] = useState(false);
@@ -10,7 +10,7 @@ export default function Welcome() {
   useEffect(() => {
     let active = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({data: {session}}) => {
       if (!active) return;
       setHasSession(Boolean(session));
     });
@@ -26,7 +26,7 @@ export default function Welcome() {
       <mdui-button
         icon="chevron_right"
         variant="outlined"
-        onClick={() => route(hasSession ? "/dashboard" : "/login")}
+        onClick={() => route(hasSession ? '/dashboard' : '/login')}
       >
         {hasSession ? 'Dashboard' : 'Let Start'}
       </mdui-button>

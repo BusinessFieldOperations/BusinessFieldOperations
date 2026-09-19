@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import {useState} from 'preact/hooks';
 import DashboardLayout from './DashboardLayout';
 
 import MerchantHome from './tabs/MerchantHome';
@@ -9,15 +9,15 @@ interface Props {
   userName: string;
 }
 
-export default function MerchantDashboard({ userName }: Props) {
+export default function MerchantDashboard({userName}: Props) {
   // State to track which tab is currently selected
   const [activeTab, setActiveTab] = useState('home');
 
   // Define the navigation items for this specific role
   const navItems = [
-    { value: 'home', icon: 'home', label: 'Home' },
-    { value: 'reports', icon: 'inventory_2', label: 'Reports' },
-    { value: 'establishments', icon: 'place', label: 'Establishments' }
+    {value: 'home', icon: 'home', label: 'Home'},
+    {value: 'reports', icon: 'inventory_2', label: 'Reports'},
+    {value: 'establishments', icon: 'place', label: 'Establishments'},
   ];
 
   return (
@@ -27,7 +27,13 @@ export default function MerchantDashboard({ userName }: Props) {
       navItems={navItems}
     >
       {/* Conditional Rendering: Only show the component that matches activeTab */}
-      {activeTab === 'home' && <MerchantHome userName={userName} role="merchant" onTabChange={setActiveTab} />}
+      {activeTab === 'home' && (
+        <MerchantHome
+          userName={userName}
+          role="merchant"
+          onTabChange={setActiveTab}
+        />
+      )}
       {activeTab === 'reports' && <MerchantReports />}
       {activeTab === 'establishments' && <MerchantEstablishments />}
     </DashboardLayout>

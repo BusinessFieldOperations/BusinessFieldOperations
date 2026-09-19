@@ -1,21 +1,30 @@
-import { useState } from 'preact/hooks';
-import "mdui/components/text-field.js";
-import "mdui/components/button.js";
-import "mdui/components/select.js";
-import "mdui/components/menu-item.js";
-import { supabase } from '../../lib/supabase';
+import {useState} from 'preact/hooks';
+import 'mdui/components/text-field.js';
+import 'mdui/components/button.js';
+import 'mdui/components/select.js';
+import 'mdui/components/menu-item.js';
+import {supabase} from '../../lib/supabase';
 
-type Feedback = { type: 'success' | 'error'; text: string };
+type Feedback = {type: 'success' | 'error'; text: string};
 
-export default function AdminUserCreation({ onCreated }: { onCreated?: (msg: Feedback) => void }) {
+export default function AdminUserCreation({
+  onCreated,
+}: {
+  onCreated?: (msg: Feedback) => void;
+}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState<'merchant' | 'promoter' | 'administrator'>('promoter');
-  
+  const [role, setRole] = useState<'merchant' | 'promoter' | 'administrator'>(
+    'promoter',
+  );
+
   const [loading, setLoading] = useState(false);
-  const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   const handleCreateUser = async (e: Event) => {
     e.preventDefault();
@@ -23,18 +32,21 @@ export default function AdminUserCreation({ onCreated }: { onCreated?: (msg: Fee
     setFeedbackMsg(null);
 
     // Call the secure RPC function created in the database
-    const { data, error } = await supabase.rpc('create_user_by_admin', {
+    const {data, error} = await supabase.rpc('create_user_by_admin', {
       email_input: email,
       password_input: password,
       first_name: firstName,
       last_name: lastName,
-      user_role: role
+      user_role: role,
     });
 
     if (error) {
-      setFeedbackMsg({ type: 'error', text: error.message });
+      setFeedbackMsg({type: 'error', text: error.message});
     } else if (data && data.status === 'success') {
-      const msg = { type: 'success' as const, text: `User ${firstName} ${lastName} created successfully.` };
+      const msg = {
+        type: 'success' as const,
+        text: `User ${firstName} ${lastName} created successfully.`,
+      };
       // notify parent and reset the form
       if (onCreated) onCreated(msg);
       setEmail('');
@@ -43,57 +55,56 @@ export default function AdminUserCreation({ onCreated }: { onCreated?: (msg: Fee
       setLastName('');
       setRole('promoter');
     }
-    
+
     setLoading(false);
   };
 
   return (
     <div class="creation-root">
       <h3>Add New User</h3>
-      
+
       <form onSubmit={handleCreateUser}>
-        
         <div>
-          <mdui-text-field 
-            label="First Name" 
-            variant="outlined" 
-            value={firstName} 
-            onInput={(e: any) => setFirstName(e.target.value)} 
-            required 
+          <mdui-text-field
+            label="First Name"
+            variant="outlined"
+            value={firstName}
+            onInput={(e: any) => setFirstName(e.target.value)}
+            required
           />
-          <mdui-text-field 
-            label="Last Name" 
-            variant="outlined" 
-            value={lastName} 
-            onInput={(e: any) => setLastName(e.target.value)} 
-            required 
+          <mdui-text-field
+            label="Last Name"
+            variant="outlined"
+            value={lastName}
+            onInput={(e: any) => setLastName(e.target.value)}
+            required
           />
         </div>
 
-        <mdui-text-field 
-          label="Email" 
-          type="email" 
-          variant="outlined" 
+        <mdui-text-field
+          label="Email"
+          type="email"
+          variant="outlined"
           icon="email"
-          value={email} 
-          onInput={(e: any) => setEmail(e.target.value)} 
-          required 
+          value={email}
+          onInput={(e: any) => setEmail(e.target.value)}
+          required
         />
 
-        <mdui-text-field 
-          label="Password" 
-          type="password" 
-          variant="outlined" 
+        <mdui-text-field
+          label="Password"
+          type="password"
+          variant="outlined"
           icon="key"
-          value={password} 
-          onInput={(e: any) => setPassword(e.target.value)} 
-          required 
+          value={password}
+          onInput={(e: any) => setPassword(e.target.value)}
+          required
           toggle-password
         />
 
-        <mdui-select 
-          label="System Role" 
-          value={role} 
+        <mdui-select
+          label="System Role"
+          value={role}
           variant="outlined"
           onChange={(e: any) => setRole(e.target.value)}
         >
@@ -103,12 +114,18 @@ export default function AdminUserCreation({ onCreated }: { onCreated?: (msg: Fee
         </mdui-select>
 
         {feedbackMsg && (
-          <div class={`feedback-message ${feedbackMsg.type === 'error' ? 'error' : 'success'}`}>
+          <div
+            class={`feedback-message ${feedbackMsg.type === 'error' ? 'error' : 'success'}`}
+          >
             {feedbackMsg.text}
           </div>
         )}
 
-        <mdui-button type="submit" variant="filled" loading={loading ? true : undefined}>
+        <mdui-button
+          type="submit"
+          variant="filled"
+          loading={loading ? true : undefined}
+        >
           Create User
         </mdui-button>
       </form>

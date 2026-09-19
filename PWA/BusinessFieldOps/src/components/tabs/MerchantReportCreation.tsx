@@ -1,24 +1,31 @@
-import { useState, useEffect } from 'preact/hooks';
-import "mdui/components/text-field.js";
-import "mdui/components/button.js";
-import "mdui/components/select.js";
-import "mdui/components/menu-item.js";
-import "mdui/components/divider.js";
-import { supabase } from '../../lib/supabase';
+import {useState, useEffect} from 'preact/hooks';
+import 'mdui/components/text-field.js';
+import 'mdui/components/button.js';
+import 'mdui/components/select.js';
+import 'mdui/components/menu-item.js';
+import 'mdui/components/divider.js';
+import {supabase} from '../../lib/supabase';
 
-type Feedback = { type: 'success' | 'error'; text: string };
+type Feedback = {type: 'success' | 'error'; text: string};
 
 type InventorySection = {
   units: number;
   packages: number;
 };
 
-type InventoryValues = Record<number, {
-  salesfloor: InventorySection;
-  stockroom: InventorySection;
-}>;
+type InventoryValues = Record<
+  number,
+  {
+    salesfloor: InventorySection;
+    stockroom: InventorySection;
+  }
+>;
 
-export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg: Feedback) => void }) {
+export default function MerchantReportCreation({
+  onCreated,
+}: {
+  onCreated?: (msg: Feedback) => void;
+}) {
   const [statesList, setStatesList] = useState<any[]>([]);
   const [clientsList, setClientsList] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<any[]>([]);
@@ -35,7 +42,7 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
 
   useEffect(() => {
     const loadStates = async () => {
-      const { data } = await supabase.from('states').select('*').order('name');
+      const {data} = await supabase.from('states').select('*').order('name');
       if (data) setStatesList(data);
     };
     loadStates();
@@ -50,9 +57,9 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
 
     if (!selectedStateId) return;
 
-    const { data } = await supabase
+    const {data} = await supabase
       .from('clients_states')
-      .select(`clients ( id, name, rif )`)
+      .select('clients ( id, name, rif )')
       .eq('state_id', selectedStateId);
 
     if (data) {
@@ -70,7 +77,7 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
       return;
     }
 
-    const { data } = await supabase
+    const {data} = await supabase
       .from('products')
       .select('*')
       .eq('client_id', selectedClientId);
@@ -79,11 +86,14 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
       setProductsList(data);
       setInventory(
         Object.fromEntries(
-          data.map((product) => [
+          data.map(product => [
             product.id,
-            { salesfloor: { units: 0, packages: 0 }, stockroom: { units: 0, packages: 0 } },
-          ])
-        )
+            {
+              salesfloor: {units: 0, packages: 0},
+              stockroom: {units: 0, packages: 0},
+            },
+          ]),
+        ),
       );
     }
   };
@@ -92,10 +102,10 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
     productId: number,
     section: 'salesfloor' | 'stockroom',
     field: keyof InventorySection,
-    value: string
+    value: string,
   ) => {
     const numericValue = Math.max(0, Number(value) || 0);
-    setInventory((current) => ({
+    setInventory(current => ({
       ...current,
       [productId]: {
         ...current[productId],
@@ -113,10 +123,13 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
     setFeedbackMsg(null);
 
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error("Could not authenticate user");
+      const {
+        data: {user},
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('Could not authenticate user');
 
-      const { data: report, error: reportError } = await supabase
+      const {data: report, error: reportError} = await supabase
         .from('merchant_reports')
         .insert({
           state_id: Number(stateId),
@@ -131,7 +144,7 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
 
       if (reportError) throw reportError;
 
-      const detailsToInsert = productsList.map((p) => {
+      const detailsToInsert = productsList.map(p => {
         const unitsPerPackage = p.units_per_package || 1;
 
         const sfU = inventory[p.id]?.salesfloor.units || 0;
@@ -139,8 +152,8 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
         const stU = inventory[p.id]?.stockroom.units || 0;
         const stP = inventory[p.id]?.stockroom.packages || 0;
 
-        const salesfloorInv = (sfP * unitsPerPackage) + sfU;
-        const stockroomInv = (stP * unitsPerPackage) + stU;
+        const salesfloorInv = sfP * unitsPerPackage + sfU;
+        const stockroomInv = stP * unitsPerPackage + stU;
         const totalUnits = salesfloorInv + stockroomInv;
 
         return {
@@ -153,27 +166,36 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
       });
 
       if (detailsToInsert.length > 0) {
-        const { error: detailsError } = await supabase
+        const {error: detailsError} = await supabase
           .from('merchant_report_details')
           .insert(detailsToInsert);
 
         if (detailsError) throw detailsError;
       }
 
-      if (onCreated) onCreated({ type: 'success', text: `Report for ${stablishment} created successfully.` });
-
+      if (onCreated)
+        onCreated({
+          type: 'success',
+          text: `Report for ${stablishment} created successfully.`,
+        });
     } catch (error: any) {
-      setFeedbackMsg({ type: 'error', text: error.message || 'Failed to submit report' });
+      setFeedbackMsg({
+        type: 'error',
+        text: error.message || 'Failed to submit report',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const renderInventoryGrid = (section: 'salesfloor' | 'stockroom', title: string) => (
+  const renderInventoryGrid = (
+    section: 'salesfloor' | 'stockroom',
+    title: string,
+  ) => (
     <div class="inventory-section">
       <h4>{title}</h4>
       <div class="inventory-grid">
-        {productsList.map((product) => (
+        {productsList.map(product => (
           <div class="inventory-product" key={`${section}-${product.id}`}>
             <span>{product.name}</span>
             <div class="inventory-inputs">
@@ -183,7 +205,14 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
                 label="Units"
                 variant="outlined"
                 value={String(inventory[product.id]?.[section].units ?? 0)}
-                onInput={(e: any) => handleInventoryChange(product.id, section, 'units', e.target.value)}
+                onInput={(e: any) =>
+                  handleInventoryChange(
+                    product.id,
+                    section,
+                    'units',
+                    e.target.value,
+                  )
+                }
               ></mdui-text-field>
               <mdui-text-field
                 type="number"
@@ -191,7 +220,14 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
                 label="Packages"
                 variant="outlined"
                 value={String(inventory[product.id]?.[section].packages ?? 0)}
-                onInput={(e: any) => handleInventoryChange(product.id, section, 'packages', e.target.value)}
+                onInput={(e: any) =>
+                  handleInventoryChange(
+                    product.id,
+                    section,
+                    'packages',
+                    e.target.value,
+                  )
+                }
               ></mdui-text-field>
             </div>
           </div>
@@ -205,7 +241,6 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
       <h3>Add Merchant Report</h3>
 
       <form onSubmit={handleCreateReport}>
-
         <div>
           <mdui-select
             label="State"
@@ -214,7 +249,11 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
             onChange={handleStateChange}
             required
           >
-            {statesList.map(s => <mdui-menu-item key={s.id} value={String(s.id)}>{s.name}</mdui-menu-item>)}
+            {statesList.map(s => (
+              <mdui-menu-item key={s.id} value={String(s.id)}>
+                {s.name}
+              </mdui-menu-item>
+            ))}
           </mdui-select>
 
           <mdui-select
@@ -225,7 +264,11 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
             required
             disabled={!stateId}
           >
-            {clientsList.map(c => <mdui-menu-item key={c.id} value={c.id}>{c.name}</mdui-menu-item>)}
+            {clientsList.map(c => (
+              <mdui-menu-item key={c.id} value={c.id}>
+                {c.name}
+              </mdui-menu-item>
+            ))}
           </mdui-select>
         </div>
 
@@ -263,23 +306,34 @@ export default function MerchantReportCreation({ onCreated }: { onCreated?: (msg
         {productsList.length > 0 ? (
           <div class="inventory-section">
             <div class="info-message">
-              <strong>Tip:</strong> Enter salesfloor and stockroom counts (units and packages). Total units will be calculated automatically.
+              <strong>Tip:</strong> Enter salesfloor and stockroom counts (units
+              and packages). Total units will be calculated automatically.
             </div>
 
             {renderInventoryGrid('salesfloor', 'Salesfloor Inventory')}
             {renderInventoryGrid('stockroom', 'Stockroom Inventory')}
           </div>
         ) : (
-          <p class="info-message">Select a state and a client to load products for inventory tracking.</p>
+          <p class="info-message">
+            Select a state and a client to load products for inventory tracking.
+          </p>
         )}
 
         {feedbackMsg && (
-          <div class={`feedback-message ${feedbackMsg.type === 'error' ? 'error' : 'success'}`}>
+          <div
+            class={`feedback-message ${feedbackMsg.type === 'error' ? 'error' : 'success'}`}
+          >
             {feedbackMsg.text}
           </div>
         )}
 
-        <mdui-button type="submit" variant="filled" icon="check" loading={loading ? true : undefined} disabled={productsList.length === 0}>
+        <mdui-button
+          type="submit"
+          variant="filled"
+          icon="check"
+          loading={loading ? true : undefined}
+          disabled={productsList.length === 0}
+        >
           Submit Report
         </mdui-button>
       </form>

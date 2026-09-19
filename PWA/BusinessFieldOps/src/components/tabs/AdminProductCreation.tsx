@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import {useState, useEffect} from 'preact/hooks';
 import 'mdui/components/text-field.js';
 import 'mdui/components/button.js';
 
@@ -7,7 +7,15 @@ type Product = {
   units_per_package?: number;
 };
 
-export default function AdminProductCreation({ onAdd, onClose, initial }: { onAdd: (p: Product) => void; onClose: () => void; initial?: Product & { id?: number } }) {
+export default function AdminProductCreation({
+  onAdd,
+  onClose,
+  initial,
+}: {
+  onAdd: (p: Product) => void;
+  onClose: () => void;
+  initial?: Product & {id?: number};
+}) {
   const [name, setName] = useState('');
   const [units, setUnits] = useState<number | ''>('');
   const [loading, setLoading] = useState(false);
@@ -23,7 +31,11 @@ export default function AdminProductCreation({ onAdd, onClose, initial }: { onAd
     e?.preventDefault();
     if (!name.trim()) return;
     setLoading(true);
-    const product = { ...initial, name: name.trim(), units_per_package: Number(units) || undefined } as Product & { id?: number };
+    const product = {
+      ...initial,
+      name: name.trim(),
+      units_per_package: Number(units) || undefined,
+    } as Product & {id?: number};
     onAdd(product as Product);
     setName('');
     setUnits('');
@@ -35,12 +47,34 @@ export default function AdminProductCreation({ onAdd, onClose, initial }: { onAd
       <h3>{initial ? 'Edit Product' : 'Add Product'}</h3>
 
       <form onSubmit={handleAdd}>
-        <mdui-text-field label="Product name" variant="outlined" value={name} onInput={(e: any) => setName(e.target.value)} required />
-        <mdui-text-field label="Units per package" type="number" variant="outlined" value={String(units)} onInput={(e: any) => setUnits(e.target.value ? Number(e.target.value) : '')} />
+        <mdui-text-field
+          label="Product name"
+          variant="outlined"
+          value={name}
+          onInput={(e: any) => setName(e.target.value)}
+          required
+        />
+        <mdui-text-field
+          label="Units per package"
+          type="number"
+          variant="outlined"
+          value={String(units)}
+          onInput={(e: any) =>
+            setUnits(e.target.value ? Number(e.target.value) : '')
+          }
+        />
 
         <div>
-          <mdui-button type="submit" variant="filled" loading={loading ? true : undefined}>{initial ? 'Save' : 'Add Product'}</mdui-button>
-          <mdui-button variant="outlined" onClick={onClose}>Cancel</mdui-button>
+          <mdui-button
+            type="submit"
+            variant="filled"
+            loading={loading ? true : undefined}
+          >
+            {initial ? 'Save' : 'Add Product'}
+          </mdui-button>
+          <mdui-button variant="outlined" onClick={onClose}>
+            Cancel
+          </mdui-button>
         </div>
       </form>
     </div>

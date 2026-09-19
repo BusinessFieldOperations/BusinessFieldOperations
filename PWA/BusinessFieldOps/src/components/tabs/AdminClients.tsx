@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'preact/hooks';
-import { Fragment } from 'preact';
+import {useEffect, useState} from 'preact/hooks';
+import {Fragment} from 'preact';
 import 'mdui/components/avatar.js';
 import 'mdui/components/button.js';
 import 'mdui/components/button-icon.js';
 import 'mdui/components/divider.js';
 import 'mdui/components/badge.js';
 
-import { supabase } from '../../lib/supabase';
+import {supabase} from '../../lib/supabase';
 import AdminClientCreation from './AdminClientCreation';
 import AdminClientEdit from './AdminClientEdit';
 import AdminClientView from './AdminClientView';
@@ -23,14 +23,16 @@ export default function AdminClients() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientItem | null>(null);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
-  const [productCounts, setProductCounts] = useState<Record<string | number, number>>({});
+  const [productCounts, setProductCounts] = useState<
+    Record<string | number, number>
+  >({});
 
   const reloadClients = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const {data, error} = await supabase
       .from('clients')
       .select('id,name,rif')
-      .order('name', { ascending: true });
+      .order('name', {ascending: true});
 
     if (error) {
       console.error('Failed to load clients', error.message || error);
@@ -43,18 +45,22 @@ export default function AdminClients() {
       const counts: Record<string, number> = {};
       await Promise.all(
         clientsData.map(async (c: any) => {
-          const { count, error: countErr } = await supabase
+          const {count, error: countErr} = await supabase
             .from('products')
-            .select('id', { count: 'exact', head: false })
+            .select('id', {count: 'exact', head: false})
             .eq('client_id', c.id);
 
           if (countErr) {
-            console.error('Failed to load product count for client', c.id, countErr.message || countErr);
+            console.error(
+              'Failed to load product count for client',
+              c.id,
+              countErr.message || countErr,
+            );
             counts[c.id] = 0;
           } else {
             counts[c.id] = count ?? 0;
           }
-        })
+        }),
       );
 
       setProductCounts(counts);
@@ -80,7 +86,13 @@ export default function AdminClients() {
       <div class="list-header">
         <h3>Clients</h3>
         {!showCreate && (
-          <mdui-button variant="filled" icon="add" onClick={() => setShowCreate(true)}>Add client</mdui-button>
+          <mdui-button
+            variant="filled"
+            icon="add"
+            onClick={() => setShowCreate(true)}
+          >
+            Add client
+          </mdui-button>
         )}
       </div>
 
@@ -112,7 +124,7 @@ export default function AdminClients() {
       {loading && <p>Loading clients...</p>}
 
       <div class="user-list">
-        {clients.map((c) => (
+        {clients.map(c => (
           <div class="user-box" key={c.id}>
             <mdui-avatar icon="person"></mdui-avatar>
 
@@ -120,13 +132,23 @@ export default function AdminClients() {
               <div>{c.name}</div>
               <div>{c.rif}</div>
               <div>
-                <span class="status-highlight">Products: {productCounts[c.id] ?? 0}</span>
+                <span class="status-highlight">
+                  Products: {productCounts[c.id] ?? 0}
+                </span>
               </div>
             </div>
 
             <div>
-              <mdui-button-icon icon="edit" variant="outlined" onClick={() => setEditingClientId(String(c.id))}></mdui-button-icon>
-              <mdui-button-icon icon="visibility" variant="filled" onClick={() => setSelectedClient(c)}></mdui-button-icon>
+              <mdui-button-icon
+                icon="edit"
+                variant="outlined"
+                onClick={() => setEditingClientId(String(c.id))}
+              ></mdui-button-icon>
+              <mdui-button-icon
+                icon="visibility"
+                variant="filled"
+                onClick={() => setSelectedClient(c)}
+              ></mdui-button-icon>
             </div>
           </div>
         ))}
@@ -138,7 +160,10 @@ export default function AdminClients() {
 
       {selectedClient && (
         <div class="dialog-panel">
-          <AdminClientView clientId={String(selectedClient.id)} onClose={() => setSelectedClient(null)} />
+          <AdminClientView
+            clientId={String(selectedClient.id)}
+            onClose={() => setSelectedClient(null)}
+          />
         </div>
       )}
     </Fragment>

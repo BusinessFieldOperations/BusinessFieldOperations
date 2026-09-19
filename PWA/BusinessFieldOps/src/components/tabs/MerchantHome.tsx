@@ -7,14 +7,20 @@ interface Props {
   onTabChange?: (value: string) => void;
 }
 
-export default function MerchantHome({ userName, role, onTabChange }: Props) {
+export default function MerchantHome({userName, role, onTabChange}: Props) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
       <HomeUserBox userName={userName} role={role} />
-      <mdui-button variant="filled" icon="point_of_sale" onClick={() => onTabChange?.('reports')}>
+      <mdui-button
+        variant="filled"
+        icon="point_of_sale"
+        onClick={() => onTabChange?.('reports')}
+      >
         New Report
       </mdui-button>
-      <p style={{ fontSize: '14px', color: 'gray' }}>Register inventory reports</p>
+      <p style={{fontSize: '14px', color: 'gray'}}>
+        Register inventory reports
+      </p>
     </div>
   );
 }
