@@ -1,112 +1,140 @@
-INSERT INTO public.states (name) VALUES
+-- =====================================================================
+-- SEED DATA (Catalogs, Brands, Clients, Products)
+-- Idempotent: Safe to run on a fresh or existing database.
+-- =====================================================================
+
+-- 1. BRANDS
+INSERT INTO public.brands (name) VALUES 
+  ('Polar'),
+  ('Kraft'),
+  ('Nestlé'),
+  ('Procter & Gamble'),
+  ('Coca-Cola'),
+  ('PepsiCo')
+ON CONFLICT (name) DO NOTHING;
+
+
+-- 2. CATEGORIES
+INSERT INTO public.categories (name) VALUES 
+  ('Alimentos'),
+  ('Bebidas'),
+  ('Limpieza'),
+  ('Cuidado Personal'),
+  ('Golosinas')
+ON CONFLICT (name) DO NOTHING;
+
+
+-- 3. STATES
+INSERT INTO public.states (name) VALUES 
   ('Aragua'),
   ('Carabobo'),
-  ('Miranda'),
   ('Distrito Capital'),
+  ('Miranda'),
   ('Zulia')
 ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO public.clients (name, rif) VALUES
-  ('Alimentos Polar', 'J-00009736-0'),
-  ('Nestlé Venezuela', 'J-00013346-4'),
-  ('Pepsico Alimentos', 'J-30137013-9')
+
+-- 4. CLIENTS
+-- We use hardcoded UUIDs so we can reliably link products and states to them later
+INSERT INTO public.clients (id, name, rif) VALUES 
+  ('11111111-1111-1111-1111-111111111111', 'Supermercados Forum', 'J-12345678-9'),
+  ('22222222-2222-2222-2222-222222222222', 'Automercados Plaza''s', 'J-98765432-1'),
+  ('33333333-3333-3333-3333-333333333333', 'Red Vital', 'J-45678901-2'),
+  ('44444444-4444-4444-4444-444444444444', 'Distribuidora Central', 'J-33333333-3')
 ON CONFLICT (name) DO NOTHING;
 
--- Link Alimentos Polar to Aragua and Carabobo
+
+-- 5. CLIENTS <-> STATES RELATIONSHIP
+-- Because states use an auto-incrementing INTEGER ID, we look up the ID by name
 INSERT INTO public.clients_states (client_id, state_id)
-SELECT c.id, s.id FROM public.clients c CROSS JOIN public.states s
-WHERE c.name = 'Alimentos Polar' AND s.name IN ('Aragua', 'Carabobo')
+SELECT c.id, s.id
+FROM public.clients c, public.states s
+WHERE 
+  -- Forum is in Aragua and Carabobo
+  (c.name = 'Supermercados Forum' AND s.name IN ('Aragua', 'Carabobo'))
+  OR 
+  -- Plaza's is in Caracas and Miranda
+  (c.name = 'Automercados Plaza''s' AND s.name IN ('Distrito Capital', 'Miranda'))
+  OR 
+  -- Red Vital is everywhere
+  (c.name = 'Red Vital' AND s.name IN ('Aragua', 'Carabobo', 'Distrito Capital', 'Miranda', 'Zulia'))
+  OR 
+  -- Distribuidora Central is only in Aragua
+  (c.name = 'Distribuidora Central' AND s.name IN ('Aragua'))
 ON CONFLICT DO NOTHING;
 
--- Link Nestlé to Miranda and Distrito Capital
-INSERT INTO public.clients_states (client_id, state_id)
-SELECT c.id, s.id FROM public.clients c CROSS JOIN public.states s
-WHERE c.name = 'Nestlé Venezuela' AND s.name IN ('Miranda', 'Distrito Capital')
-ON CONFLICT DO NOTHING;
 
--- Link Pepsico to Aragua and Zulia
-INSERT INTO public.clients_states (client_id, state_id)
-SELECT c.id, s.id FROM public.clients c CROSS JOIN public.states s
-WHERE c.name = 'Pepsico Alimentos' AND s.name IN ('Aragua', 'Zulia')
-ON CONFLICT DO NOTHING;
-
-
-INSERT INTO public.products (name, client_id, units_per_package)
-SELECT 'Harina P.A.N. Blanca 1kg', id, 20 FROM public.clients WHERE name = 'Alimentos Polar'
+-- 6. PRODUCTS
+-- Hardcoded UUIDs since `id` is now a UUID. 
+-- Using the exact brand/category names created above, and assigning them to our client UUIDs.
+INSERT INTO public.products (
+  id, 
+  name, 
+  client_id, 
+  units_per_package, 
+  brand, 
+  category, 
+  display_quantity, 
+  sku
+) VALUES
+(
+  'aaaa0000-aaaa-0000-aaaa-000000000001',
+  'Harina Precocida P.A.N. Blanca',
+  '11111111-1111-1111-1111-111111111111', -- Forum
+  20, 
+  'Polar', 
+  'Alimentos', 
+  '1 kg', 
+  'POL-PAN-001'
+),
+(
+  'aaaa0000-aaaa-0000-aaaa-000000000002',
+  'Mayonesa Kraft',
+  '11111111-1111-1111-1111-111111111111', -- Forum
+  12, 
+  'Kraft', 
+  'Alimentos', 
+  '500 g', 
+  'KRF-MAY-500'
+),
+(
+  'aaaa0000-aaaa-0000-aaaa-000000000003',
+  'Nestea Durazno',
+  '22222222-2222-2222-2222-222222222222', -- Plaza's
+  24, 
+  'Nestlé', 
+  'Bebidas', 
+  '450 g', 
+  'NST-DUR-450'
+),
+(
+  'aaaa0000-aaaa-0000-aaaa-000000000004',
+  'Detergente en Polvo Ariel',
+  '33333333-3333-3333-3333-333333333333', -- Red Vital
+  10, 
+  'Procter & Gamble', 
+  'Limpieza', 
+  '1.2 kg', 
+  'PG-ARI-1200'
+),
+(
+  'aaaa0000-aaaa-0000-aaaa-000000000005',
+  'Margarina Mavesa',
+  '44444444-4444-4444-4444-444444444444', -- Distribuidora Central
+  24, 
+  'Polar', 
+  'Alimentos', 
+  '500 g', 
+  'POL-MAV-500'
+),
+(
+  'aaaa0000-aaaa-0000-aaaa-000000000006',
+  'Gatorade Frutas Tropicales',
+  '11111111-1111-1111-1111-111111111111', -- Forum
+  12, 
+  'PepsiCo', 
+  'Bebidas', 
+  '500 ml', 
+  'PEP-GAT-500'
+)
 ON CONFLICT (name) DO NOTHING;
-
-INSERT INTO public.products (name, client_id, units_per_package)
-SELECT 'Margarina Mavesa 500g', id, 24 FROM public.clients WHERE name = 'Alimentos Polar'
-ON CONFLICT (name) DO NOTHING;
-
-INSERT INTO public.products (name, client_id, units_per_package)
-SELECT 'Cerelac 400g', id, 12 FROM public.clients WHERE name = 'Nestlé Venezuela'
-ON CONFLICT (name) DO NOTHING;
-
-INSERT INTO public.products (name, client_id, units_per_package)
-SELECT 'Samba de Chocolate', id, 20 FROM public.clients WHERE name = 'Nestlé Venezuela'
-ON CONFLICT (name) DO NOTHING;
-
-INSERT INTO public.products (name, client_id, units_per_package)
-SELECT 'Doritos Queso Atrevido 150g', id, 16 FROM public.clients WHERE name = 'Pepsico Alimentos'
-ON CONFLICT (name) DO NOTHING;
-
--- This will only insert if there is at least ONE user with the 'merchant' role in public.profiles.
-INSERT INTO public.merchant_reports (state_id, salesman_name, merchant_id, zone, stablishment, client_id)
-SELECT 
-    (SELECT id FROM public.states WHERE name = 'Aragua' LIMIT 1),
-    'Carlos Perez',
-    (SELECT id FROM public.profiles WHERE role = 'merchant' LIMIT 1),
-    'Maracay Centro',
-    'Supermercado San Diego',
-    (SELECT id FROM public.clients WHERE name = 'Alimentos Polar' LIMIT 1)
-WHERE EXISTS (SELECT id FROM public.profiles WHERE role = 'merchant');
-
--- Insert Merchant Report Details (Linked to the report we just created above)
-INSERT INTO public.merchant_report_details (report_id, product_id, salesfloor_inventory, stockroom_inventory, total_units)
-SELECT 
-    (SELECT id FROM public.merchant_reports WHERE salesman_name = 'Carlos Perez' ORDER BY submitted_at DESC LIMIT 1),
-    (SELECT id FROM public.products WHERE name = 'Harina P.A.N. Blanca 1kg' LIMIT 1),
-    50,   -- salesfloor_inventory
-    150,  -- stockroom_inventory
-    200   -- total_units (Must equal 50 + 150 because of the check constraint)
-WHERE EXISTS (SELECT id FROM public.merchant_reports WHERE salesman_name = 'Carlos Perez');
-
-INSERT INTO public.merchant_report_details (report_id, product_id, salesfloor_inventory, stockroom_inventory, total_units)
-SELECT 
-    (SELECT id FROM public.merchant_reports WHERE salesman_name = 'Carlos Perez' ORDER BY submitted_at DESC LIMIT 1),
-    (SELECT id FROM public.products WHERE name = 'Margarina Mavesa 500g' LIMIT 1),
-    20,   -- salesfloor_inventory
-    80,   -- stockroom_inventory
-    100   -- total_units 
-WHERE EXISTS (SELECT id FROM public.merchant_reports WHERE salesman_name = 'Carlos Perez');
-
--- This will only insert if there is at least ONE user with the 'promoter' role in public.profiles.
-INSERT INTO public.promoter_reports (state_id, salesman_name, promoter_id, zone, stablishment, client_id)
-SELECT 
-    (SELECT id FROM public.states WHERE name = 'Miranda' LIMIT 1),
-    'Maria Gomez',
-    (SELECT id FROM public.profiles WHERE role = 'promoter' LIMIT 1),
-    'Altamira',
-    'Gama Express',
-    (SELECT id FROM public.clients WHERE name = 'Nestlé Venezuela' LIMIT 1)
-WHERE EXISTS (SELECT id FROM public.profiles WHERE role = 'promoter');
-
--- Insert Promoter Report Details
-INSERT INTO public.promoter_report_details (report_id, product_id, initial_inventory, final_inventory, total_sales)
-SELECT
-    (SELECT id FROM public.promoter_reports WHERE salesman_name = 'Maria Gomez' ORDER BY submitted_at DESC LIMIT 1),
-    (SELECT id FROM public.products WHERE name = 'Cerelac 400g' LIMIT 1),
-    100,  -- initial_inventory
-    75,   -- final_inventory
-    25    -- total_sales (Must equal 100 - 75 because of the check constraint)
-WHERE EXISTS (SELECT id FROM public.promoter_reports WHERE salesman_name = 'Maria Gomez');
-
-INSERT INTO public.promoter_report_details (report_id, product_id, initial_inventory, final_inventory, total_sales)
-SELECT
-    (SELECT id FROM public.promoter_reports WHERE salesman_name = 'Maria Gomez' ORDER BY submitted_at DESC LIMIT 1),
-    (SELECT id FROM public.products WHERE name = 'Samba de Chocolate' LIMIT 1),
-    200,  -- initial_inventory
-    110,  -- final_inventory
-    90    -- total_sales 
-WHERE EXISTS (SELECT id FROM public.promoter_reports WHERE salesman_name = 'Maria Gomez');
