@@ -5,6 +5,7 @@ import AdminHome from './tabs/AdminHome';
 import AdminReports from './tabs/AdminReports';
 import AdminUsers from './tabs/AdminUsers';
 import AdminClients from './tabs/AdminClients';
+import CRMContacts from './tabs/CRMContacts';
 
 interface Props {
   userName: string;
@@ -17,6 +18,7 @@ export default function AdminDashboard({userName}: Props) {
     {value: 'home', icon: 'home', label: 'Home'},
     {value: 'reports', icon: 'analytics', label: 'Reports'},
     {value: 'clients', icon: 'people', label: 'Clients'},
+    {value: 'contacts', icon: 'contacts', label: 'Contacts'},
     {value: 'users', icon: 'manage_accounts', label: 'Users'},
   ];
 
@@ -35,6 +37,7 @@ export default function AdminDashboard({userName}: Props) {
       )}
       {activeTab === 'reports' && <AdminReports />}
       {activeTab === 'clients' && <AdminClients />}
+      {activeTab === 'contacts' && <CRMContacts mode="admin" title="CRM Contacts" />}
       {activeTab === 'users' && <AdminUsers />}
     </DashboardLayout>
   );

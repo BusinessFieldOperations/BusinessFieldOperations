@@ -5,6 +5,7 @@ import DashboardLayout from './DashboardLayout';
 import PromoterHome from './tabs/PromoterHome';
 import PromoterSales from './tabs/PromoterSales';
 import PromoterZones from './tabs/PromoterZones';
+import CRMContacts from './tabs/CRMContacts';
 
 interface Props {
   userName: string;
@@ -19,6 +20,7 @@ export default function PromoterDashboard({userName}: Props) {
     {value: 'home', icon: 'home', label: 'Home'},
     {value: 'sales', icon: 'receipt_long', label: 'Sales'},
     {value: 'zones', icon: 'place', label: 'Zones'},
+    {value: 'contacts', icon: 'contacts', label: 'Contacts'},
   ];
 
   return (
@@ -37,6 +39,7 @@ export default function PromoterDashboard({userName}: Props) {
       )}
       {activeTab === 'sales' && <PromoterSales />}
       {activeTab === 'zones' && <PromoterZones />}
+      {activeTab === 'contacts' && <CRMContacts mode="self" title="CRM Contacts" />}
     </DashboardLayout>
   );
 }

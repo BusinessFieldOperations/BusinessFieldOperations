@@ -4,6 +4,7 @@ import DashboardLayout from './DashboardLayout';
 import MerchantHome from './tabs/MerchantHome';
 import MerchantReports from './tabs/MerchantReports';
 import MerchantEstablishments from './tabs/MerchantEstablishments';
+import CRMContacts from './tabs/CRMContacts';
 
 interface Props {
   userName: string;
@@ -18,6 +19,7 @@ export default function MerchantDashboard({userName}: Props) {
     {value: 'home', icon: 'home', label: 'Home'},
     {value: 'reports', icon: 'inventory_2', label: 'Reports'},
     {value: 'establishments', icon: 'place', label: 'Establishments'},
+    {value: 'contacts', icon: 'contacts', label: 'Contacts'},
   ];
 
   return (
@@ -36,6 +38,7 @@ export default function MerchantDashboard({userName}: Props) {
       )}
       {activeTab === 'reports' && <MerchantReports />}
       {activeTab === 'establishments' && <MerchantEstablishments />}
+      {activeTab === 'contacts' && <CRMContacts mode="self" title="CRM Contacts" />}
     </DashboardLayout>
   );
 }
