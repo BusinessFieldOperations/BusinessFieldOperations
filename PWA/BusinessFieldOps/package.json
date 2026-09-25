@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "icons": "node ./generate-icons.cjs",
+    "icons": "node ./generate-icons.js",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
