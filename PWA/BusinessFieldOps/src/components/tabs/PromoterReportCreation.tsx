@@ -18,31 +18,69 @@ type InventoryValues = Record<
   {
     initial: InventorySection;
     final: InventorySection;
+    restocked: number;
   }
 >;
+
+const emptyCounts = (initial: InventorySection = {units: 0, packages: 0}) => ({
+  initial: {...initial},
+  final: {...initial},
+  restocked: 0,
+});
 
 export default function PromoterReportCreation({
   onCreated,
 }: {
   onCreated?: (msg: Feedback) => void;
 }) {
-  // Selection states
   const [statesList, setStatesList] = useState<any[]>([]);
   const [clientsList, setClientsList] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<any[]>([]);
 
-  // Form values
   const [stateId, setStateId] = useState('');
   const [clientId, setClientId] = useState('');
   const [salesmanName, setSalesmanName] = useState('');
   const [zone, setZone] = useState('');
   const [stablishment, setStablishment] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [locationAccuracy, setLocationAccuracy] = useState('');
+  const [arrivalPhotoPath, setArrivalPhotoPath] = useState('');
   const [inventory, setInventory] = useState<InventoryValues>({});
 
   const [loading, setLoading] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<Feedback | null>(null);
 
-  // 1. Fetch States on Mount
+  const getCurrentLocation = async () => {
+    if (!('geolocation' in navigator)) {
+      throw new Error('This device does not support GPS location.');
+    }
+
+    return await new Promise<{
+      latitude: number;
+      longitude: number;
+      accuracy: number | null;
+    }>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+        },
+        error => {
+          reject(new Error(error.message || 'Unable to access the device GPS location.'));
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0,
+        },
+      );
+    });
+  };
+
   useEffect(() => {
     const loadStates = async () => {
       const {data} = await supabase.from('states').select('*').order('name');
@@ -51,7 +89,6 @@ export default function PromoterReportCreation({
     loadStates();
   }, []);
 
-  // 2. Fetch Clients when State changes
   const handleStateChange = async (e: any) => {
     const selectedStateId = e.target.value;
     setStateId(selectedStateId);
@@ -71,7 +108,6 @@ export default function PromoterReportCreation({
     }
   };
 
-  // 3. Fetch Products when Client changes
   const handleClientChange = async (e: any) => {
     const selectedClientId = e.target.value;
     setClientId(selectedClientId);
@@ -89,13 +125,9 @@ export default function PromoterReportCreation({
 
     if (data) {
       setProductsList(data);
-      // Initialize inventory fields correctly
       setInventory(
         Object.fromEntries(
-          data.map(product => [
-            product.id,
-            {initial: {units: 0, packages: 0}, final: {units: 0, packages: 0}},
-          ]),
+          data.map(product => [product.id, emptyCounts()]),
         ),
       );
     }
@@ -111,11 +143,22 @@ export default function PromoterReportCreation({
     setInventory(current => ({
       ...current,
       [productId]: {
-        ...current[productId],
+        ...(current[productId] ?? emptyCounts()),
         [section]: {
-          ...current[productId]?.[section],
+          ...((current[productId]?.[section] ?? {units: 0, packages: 0})),
           [field]: numericValue,
         },
+      },
+    }));
+  };
+
+  const handleRestockedChange = (productId: number, value: string) => {
+    const numericValue = Math.max(0, Number(value) || 0);
+    setInventory(current => ({
+      ...current,
+      [productId]: {
+        ...(current[productId] ?? emptyCounts()),
+        restocked: numericValue,
       },
     }));
   };
@@ -126,52 +169,56 @@ export default function PromoterReportCreation({
     setFeedbackMsg(null);
 
     try {
-      // 1. Get auth user mapping for promoter_id
+      const location = await getCurrentLocation();
+      setLatitude(String(location.latitude));
+      setLongitude(String(location.longitude));
+      setLocationAccuracy(String(location.accuracy ?? ''));
+
       const {
         data: {user},
         error: userError,
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('Could not authenticate user');
 
-      // 2. Insert Base Report inside 'promoter_reports' table
       const {data: report, error: reportError} = await supabase
         .from('promoter_reports')
         .insert({
           state_id: Number(stateId),
           salesman_name: salesmanName,
           promoter_id: user.id,
-          zone: zone,
-          stablishment: stablishment,
+          zone,
+          stablishment,
           client_id: clientId,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          location_accuracy_m: location.accuracy,
+          arrival_photo_path: arrivalPhotoPath.trim() || null,
         })
         .select()
         .single();
 
       if (reportError) throw reportError;
 
-      // 3. Calculate details based on the schema constraints
       const detailsToInsert = productsList.map(p => {
         const unitsPerPackage = p.units_per_package || 1;
 
-        const initU = inventory[p.id]?.initial.units || 0;
-        const initP = inventory[p.id]?.initial.packages || 0;
-        const finU = inventory[p.id]?.final.units || 0;
-        const finP = inventory[p.id]?.final.packages || 0;
-
-        const initialInv = initP * unitsPerPackage + initU;
-        const finalInv = finP * unitsPerPackage + finU;
-        const totalSales = initialInv - finalInv; // Must map to DB constraint
+        const initialInv =
+          (inventory[p.id]?.initial.packages ?? 0) * unitsPerPackage +
+          (inventory[p.id]?.initial.units ?? 0);
+        const finalInv =
+          (inventory[p.id]?.final.packages ?? 0) * unitsPerPackage +
+          (inventory[p.id]?.final.units ?? 0);
+        const restockedUnits = inventory[p.id]?.restocked ?? 0;
 
         return {
           report_id: report.id,
           product_id: p.id,
           initial_inventory: initialInv,
           final_inventory: finalInv,
-          total_sales: totalSales,
+          restocked_units: restockedUnits,
         };
       });
 
-      // 4. Insert Inventory Details
       if (detailsToInsert.length > 0) {
         const {error: detailsError} = await supabase
           .from('promoter_report_details')
@@ -180,11 +227,12 @@ export default function PromoterReportCreation({
         if (detailsError) throw detailsError;
       }
 
-      if (onCreated)
+      if (onCreated) {
         onCreated({
           type: 'success',
           text: `Report for ${stablishment} created successfully.`,
         });
+      }
     } catch (error: any) {
       setFeedbackMsg({
         type: 'error',
@@ -245,7 +293,7 @@ export default function PromoterReportCreation({
       <h3>Add Sales Report</h3>
 
       <form onSubmit={handleCreateReport}>
-        <div>
+        <div class="field-grid">
           <mdui-select
             label="State"
             variant="outlined"
@@ -285,7 +333,7 @@ export default function PromoterReportCreation({
           required
         />
 
-        <div>
+        <div class="field-grid">
           <mdui-text-field
             label="Zone"
             variant="outlined"
@@ -305,17 +353,48 @@ export default function PromoterReportCreation({
           />
         </div>
 
+        <mdui-text-field
+          label="Arrival photo path"
+          variant="outlined"
+          value={arrivalPhotoPath}
+          onInput={(e: any) => setArrivalPhotoPath(e.target.value)}
+          required
+        ></mdui-text-field>
+
         <mdui-divider></mdui-divider>
 
         {productsList.length > 0 ? (
           <div class="inventory-section">
             <div class="info-message">
-              <strong>Tip:</strong> System will automatically calculate total
-              inventory and sales based on the units and packages (Bultos).
+              <strong>Tip:</strong> Enter the starting stock, closing stock, and
+              units restocked during the shift.
             </div>
 
             {renderInventoryGrid('initial', 'Initial Inventory')}
             {renderInventoryGrid('final', 'Final Inventory')}
+
+            <div class="inventory-section">
+              <h4>Restocked Units</h4>
+              <div class="inventory-grid">
+                {productsList.map(product => (
+                  <div class="inventory-product" key={`restocked-${product.id}`}>
+                    <span>{product.name}</span>
+                    <div class="inventory-inputs">
+                      <mdui-text-field
+                        type="number"
+                        min="0"
+                        label="Restocked"
+                        variant="outlined"
+                        value={String(inventory[product.id]?.restocked ?? 0)}
+                        onInput={(e: any) =>
+                          handleRestockedChange(product.id, e.target.value)
+                        }
+                      ></mdui-text-field>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <p class="info-message">

@@ -6,8 +6,8 @@ import 'mdui/components/button.js';
 import 'mdui/components/button-icon.js';
 import 'mdui/components/divider.js';
 
-import MerchantReportCreation from './MerchantReportCreation.tsx';
-import MerchantReportView from './MerchantReportView.tsx';
+import MerchantReportCreation from './MerchantReportCreation';
+import MerchantReportView from './MerchantReportView';
 import {supabase} from '../../lib/supabase';
 
 interface ReportItem {

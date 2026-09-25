@@ -16,6 +16,7 @@ export default function AdminUserCreation({
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [ci, setCi] = useState('');
   const [role, setRole] = useState<'merchant' | 'promoter' | 'administrator'>(
     'promoter',
   );
@@ -31,28 +32,56 @@ export default function AdminUserCreation({
     setLoading(true);
     setFeedbackMsg(null);
 
-    // Call the secure RPC function created in the database
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedCi = ci.trim();
+
+    if (!trimmedFirstName || !trimmedLastName) {
+      setFeedbackMsg({
+        type: 'error',
+        text: 'First name and last name are required.',
+      });
+      setLoading(false);
+      return;
+    }
+
     const {data, error} = await supabase.rpc('create_user_by_admin', {
       email_input: email,
       password_input: password,
-      first_name: firstName,
-      last_name: lastName,
+      first_name: trimmedFirstName,
+      last_name: trimmedLastName,
       user_role: role,
     });
 
     if (error) {
       setFeedbackMsg({type: 'error', text: error.message});
     } else if (data && data.status === 'success') {
+      if (trimmedCi) {
+        const {error: profileError} = await supabase
+          .from('profiles')
+          .update({ci: trimmedCi})
+          .eq('id', data.user_id);
+
+        if (profileError) {
+          setFeedbackMsg({
+            type: 'error',
+            text: `User created, but CI could not be saved: ${profileError.message}`,
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
       const msg = {
         type: 'success' as const,
-        text: `User ${firstName} ${lastName} created successfully.`,
+        text: `User ${trimmedFirstName} ${trimmedLastName} created successfully.`,
       };
-      // notify parent and reset the form
       if (onCreated) onCreated(msg);
       setEmail('');
       setPassword('');
       setFirstName('');
       setLastName('');
+      setCi('');
       setRole('promoter');
     }
 
@@ -80,6 +109,13 @@ export default function AdminUserCreation({
             required
           />
         </div>
+
+        <mdui-text-field
+          label="CI / ID"
+          variant="outlined"
+          value={ci}
+          onInput={(e: any) => setCi(e.target.value)}
+        />
 
         <mdui-text-field
           label="Email"

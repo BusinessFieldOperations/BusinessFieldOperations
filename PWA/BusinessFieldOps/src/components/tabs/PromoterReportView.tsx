@@ -9,6 +9,7 @@ type DetailItem = {
   product_id: number;
   initial_inventory: number;
   final_inventory: number;
+  restocked_units: number;
   total_sales: number;
   products?: {id: number; name: string; units_per_package?: number} | null;
 };
@@ -37,7 +38,6 @@ export default function PromoterReportView({
       setLoading(true);
       setError(null);
       try {
-        // Fetch report with related details and nested product info
         const {data, error} = await supabase
           .from('promoter_reports')
           .select(
@@ -49,6 +49,10 @@ export default function PromoterReportView({
             stablishment,
             client_id,
             promoter_id,
+            latitude,
+            longitude,
+            location_accuracy_m,
+            arrival_photo_path,
             clients ( id, name ),
             states ( id, name ),
             profiles:profiles!promoter_reports_promoter_id_fkey ( id, first_name, last_name, is_active ),
@@ -56,6 +60,7 @@ export default function PromoterReportView({
               product_id,
               initial_inventory,
               final_inventory,
+              restocked_units,
               total_sales,
               products ( id, name, units_per_package )
             )
@@ -69,13 +74,13 @@ export default function PromoterReportView({
 
         if (data) {
           setReport(data);
-          // normalize details — the nested relation may be an array
           const rawDetails = (data.promoter_report_details || []) as any[];
           setDetails(
             rawDetails.map(d => ({
               product_id: d.product_id,
               initial_inventory: d.initial_inventory,
               final_inventory: d.final_inventory,
+              restocked_units: d.restocked_units ?? 0,
               total_sales: d.total_sales,
               products: d.products ?? null,
             })),
@@ -200,6 +205,27 @@ export default function PromoterReportView({
                 <span class="meta-label">Zone</span>
                 <span class="meta-value">{report.zone}</span>
               </div>
+              <div class="meta-row">
+                <span class="meta-label">GPS</span>
+                <span class="meta-value">
+                  {report.latitude != null && report.longitude != null
+                    ? `${report.latitude}, ${report.longitude}`
+                    : 'Not recorded'}
+                </span>
+              </div>
+              {report.location_accuracy_m != null && (
+                <div class="meta-row">
+                  <span class="meta-label">Accuracy</span>
+                  <span class="meta-value">{report.location_accuracy_m} m</span>
+                </div>
+              )}
+            </div>
+
+            <div class="meta-row">
+              <span class="meta-label">Arrival photo</span>
+              <span class="meta-value">
+                {report.arrival_photo_path || 'Not recorded'}
+              </span>
             </div>
 
             <mdui-divider></mdui-divider>
@@ -215,20 +241,21 @@ export default function PromoterReportView({
                 <div class="report-table-shell">
                   <div class="report-table-wrapper" ref={tableWrapperRef}>
                     <div
-                      class="inventory-table"
+                      class="inventory-table inventory-table-wide"
                       role="table"
                       aria-label="Report inventory table"
                     >
-                      <div class="inventory-row inventory-head" role="row">
+                      <div class="inventory-row inventory-head inventory-row-wide" role="row">
                         <div role="columnheader">Product</div>
                         <div role="columnheader">Units/Package</div>
                         <div role="columnheader">Initial</div>
                         <div role="columnheader">Final</div>
+                        <div role="columnheader">Restocked</div>
                         <div role="columnheader">Sales</div>
                       </div>
                       {details.map(d => (
                         <div
-                          class="inventory-row"
+                          class="inventory-row inventory-row-wide"
                           role="row"
                           key={d.product_id}
                         >
@@ -240,6 +267,7 @@ export default function PromoterReportView({
                           </div>
                           <div role="cell">{d.initial_inventory}</div>
                           <div role="cell">{d.final_inventory}</div>
+                          <div role="cell">{d.restocked_units}</div>
                           <div role="cell">{d.total_sales}</div>
                         </div>
                       ))}

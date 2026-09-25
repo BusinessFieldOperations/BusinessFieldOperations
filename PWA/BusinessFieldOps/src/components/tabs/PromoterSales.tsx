@@ -6,8 +6,8 @@ import 'mdui/components/button.js';
 import 'mdui/components/button-icon.js';
 import 'mdui/components/divider.js';
 
-import PromoterReportCreation from './PromoterReportCreation.tsx';
-import PromoterReportView from './PromoterReportView.tsx';
+import PromoterReportCreation from './PromoterReportCreation';
+import PromoterReportView from './PromoterReportView';
 import {supabase} from '../../lib/supabase';
 
 interface ReportItem {

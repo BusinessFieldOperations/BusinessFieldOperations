@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'preact/hooks';
+import {useEffect, useState} from 'preact/hooks';
 import 'mdui/components/text-field.js';
 import 'mdui/components/button.js';
 import 'mdui/components/select.js';
@@ -8,18 +8,33 @@ import {supabase} from '../../lib/supabase';
 
 type Feedback = {type: 'success' | 'error'; text: string};
 
-type InventorySection = {
-  units: number;
-  packages: number;
+type InventoryCounts = {
+  good: number;
+  damaged: number;
+  expired: number;
+};
+
+type SalesfloorEntry = {
+  id: string;
+  name: string;
 };
 
 type InventoryValues = Record<
   number,
   {
-    salesfloor: InventorySection;
-    stockroom: InventorySection;
+    stockroom: InventoryCounts;
+    salesfloors: Record<string, InventoryCounts>;
   }
 >;
+
+const createEmptyCounts = (): InventoryCounts => ({
+  good: 0,
+  damaged: 0,
+  expired: 0,
+});
+
+const createSalesfloorId = () =>
+  `salesfloor-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 export default function MerchantReportCreation({
   onCreated,
@@ -29,16 +44,56 @@ export default function MerchantReportCreation({
   const [statesList, setStatesList] = useState<any[]>([]);
   const [clientsList, setClientsList] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<any[]>([]);
+  const [salesfloors, setSalesfloors] = useState<SalesfloorEntry[]>([
+    {id: createSalesfloorId(), name: 'Salesfloor 1'},
+  ]);
 
   const [stateId, setStateId] = useState('');
   const [clientId, setClientId] = useState('');
   const [salesmanName, setSalesmanName] = useState('');
   const [zone, setZone] = useState('');
   const [stablishment, setStablishment] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [locationAccuracy, setLocationAccuracy] = useState('');
+  const [arrivalPhotoPath, setArrivalPhotoPath] = useState('');
+  const [departurePhotoPath, setDeparturePhotoPath] = useState('');
+  const [observations, setObservations] = useState('');
+  const [noInventory, setNoInventory] = useState(false);
   const [inventory, setInventory] = useState<InventoryValues>({});
 
   const [loading, setLoading] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<Feedback | null>(null);
+
+  const getCurrentLocation = async () => {
+    if (!('geolocation' in navigator)) {
+      throw new Error('This device does not support GPS location.');
+    }
+
+    return await new Promise<{
+      latitude: number;
+      longitude: number;
+      accuracy: number | null;
+    }>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+        },
+        error => {
+          reject(new Error(error.message || 'Unable to access the device GPS location.'));
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0,
+        },
+      );
+    });
+  };
 
   useEffect(() => {
     const loadStates = async () => {
@@ -54,6 +109,7 @@ export default function MerchantReportCreation({
     setClientId('');
     setProductsList([]);
     setInventory({});
+    setSalesfloors([{id: createSalesfloorId(), name: 'Salesfloor 1'}]);
 
     if (!selectedStateId) return;
 
@@ -83,38 +139,108 @@ export default function MerchantReportCreation({
       .eq('client_id', selectedClientId);
 
     if (data) {
-      setProductsList(data);
-      setInventory(
-        Object.fromEntries(
-          data.map(product => [
-            product.id,
-            {
-              salesfloor: {units: 0, packages: 0},
-              stockroom: {units: 0, packages: 0},
-            },
-          ]),
-        ),
+      const nextInventory = Object.fromEntries(
+        data.map(product => [
+          product.id,
+          {
+            stockroom: createEmptyCounts(),
+            salesfloors: Object.fromEntries(
+              salesfloors.map(salesfloor => [salesfloor.id, createEmptyCounts()]),
+            ),
+          },
+        ]),
       );
+      setProductsList(data);
+      setInventory(nextInventory);
     }
+  };
+
+  const updateSalesfloorList = (nextSalesfloors: SalesfloorEntry[]) => {
+    setSalesfloors(nextSalesfloors);
+    setInventory(current => {
+      const merged: Record<number, {stockroom: InventoryCounts; salesfloors: Record<string, InventoryCounts>}> = {};
+
+      Object.entries(current).forEach(([productId, value]) => {
+        merged[Number(productId)] = {
+          stockroom: value.stockroom ?? createEmptyCounts(),
+          salesfloors: Object.fromEntries(
+            nextSalesfloors.map(salesfloor => [
+              salesfloor.id,
+              value.salesfloors?.[salesfloor.id] ?? createEmptyCounts(),
+            ]),
+          ),
+        };
+      });
+
+      return merged;
+    });
+  };
+
+  const addSalesfloor = () => {
+    const nextSalesfloor = {
+      id: createSalesfloorId(),
+      name: `Salesfloor ${salesfloors.length + 1}`,
+    };
+    updateSalesfloorList([...salesfloors, nextSalesfloor]);
+  };
+
+  const removeSalesfloor = (id: string) => {
+    if (salesfloors.length === 1) return;
+
+    const nextSalesfloors = salesfloors.filter(salesfloor => salesfloor.id !== id);
+    updateSalesfloorList(nextSalesfloors);
+  };
+
+  const handleSalesfloorNameChange = (id: string, value: string) => {
+    const nextSalesfloors = salesfloors.map(salesfloor =>
+      salesfloor.id === id ? {...salesfloor, name: value} : salesfloor,
+    );
+    setSalesfloors(nextSalesfloors);
   };
 
   const handleInventoryChange = (
     productId: number,
-    section: 'salesfloor' | 'stockroom',
-    field: keyof InventorySection,
+    section: 'stockroom' | 'salesfloor',
+    salesfloorId: string | null,
+    field: keyof InventoryCounts,
     value: string,
   ) => {
     const numericValue = Math.max(0, Number(value) || 0);
-    setInventory(current => ({
-      ...current,
-      [productId]: {
-        ...current[productId],
-        [section]: {
-          ...current[productId]?.[section],
-          [field]: numericValue,
+
+    setInventory(current => {
+      const currentEntry = current[productId] ?? {
+        stockroom: createEmptyCounts(),
+        salesfloors: {},
+      };
+
+      if (section === 'stockroom') {
+        return {
+          ...current,
+          [productId]: {
+            ...currentEntry,
+            stockroom: {
+              ...currentEntry.stockroom,
+              [field]: numericValue,
+            },
+          },
+        };
+      }
+
+      const currentSalesfloor = currentEntry.salesfloors[salesfloorId ?? ''] ?? createEmptyCounts();
+      return {
+        ...current,
+        [productId]: {
+          ...currentEntry,
+          salesfloors: {
+            ...currentEntry.salesfloors,
+            [salesfloorId ?? '']: {
+              ...currentSalesfloor,
+              [field]: numericValue,
+            },
+          },
         },
-      },
-    }));
+      };
+    });
   };
 
   const handleCreateReport = async (e: Event) => {
@@ -123,61 +249,120 @@ export default function MerchantReportCreation({
     setFeedbackMsg(null);
 
     try {
+      const location = await getCurrentLocation();
+      setLatitude(String(location.latitude));
+      setLongitude(String(location.longitude));
+      setLocationAccuracy(String(location.accuracy ?? ''));
+
       const {
         data: {user},
         error: userError,
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('Could not authenticate user');
 
+      const reportPayload = {
+        state_id: Number(stateId),
+        salesman_name: salesmanName,
+        merchant_id: user.id,
+        zone,
+        stablishment,
+        client_id: clientId,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        location_accuracy_m: location.accuracy,
+        arrival_photo_path: arrivalPhotoPath.trim() || null,
+        departure_photo_path: departurePhotoPath.trim() || null,
+        observations: observations.trim() || null,
+        no_inventory: noInventory,
+      };
+
       const {data: report, error: reportError} = await supabase
         .from('merchant_reports')
-        .insert({
-          state_id: Number(stateId),
-          salesman_name: salesmanName,
-          merchant_id: user.id,
-          zone: zone,
-          stablishment: stablishment,
-          client_id: clientId,
-        })
+        .insert(reportPayload)
         .select()
         .single();
 
       if (reportError) throw reportError;
 
-      const detailsToInsert = productsList.map(p => {
-        const unitsPerPackage = p.units_per_package || 1;
-
-        const sfU = inventory[p.id]?.salesfloor.units || 0;
-        const sfP = inventory[p.id]?.salesfloor.packages || 0;
-        const stU = inventory[p.id]?.stockroom.units || 0;
-        const stP = inventory[p.id]?.stockroom.packages || 0;
-
-        const salesfloorInv = sfP * unitsPerPackage + sfU;
-        const stockroomInv = stP * unitsPerPackage + stU;
-        const totalUnits = salesfloorInv + stockroomInv;
-
-        return {
+      if (!noInventory) {
+        const salesfloorRows = salesfloors.map(salesfloor => ({
           report_id: report.id,
-          product_id: p.id,
-          salesfloor_inventory: salesfloorInv,
-          stockroom_inventory: stockroomInv,
-          total_units: totalUnits,
-        };
-      });
+          name: salesfloor.name.trim() || 'Salesfloor',
+        }));
 
-      if (detailsToInsert.length > 0) {
-        const {error: detailsError} = await supabase
-          .from('merchant_report_details')
-          .insert(detailsToInsert);
+        const {data: insertedSalesfloors, error: salesfloorError} = await supabase
+          .from('merchant_report_salesfloors')
+          .insert(salesfloorRows)
+          .select();
 
-        if (detailsError) throw detailsError;
+        if (salesfloorError) throw salesfloorError;
+
+        const salesfloorMap = new Map(
+          salesfloors.map((salesfloor, index) => [
+            salesfloor.id,
+            insertedSalesfloors?.[index]?.id ?? null,
+          ]),
+        );
+
+        const inventoryRows = productsList.flatMap(product => {
+          const productState = inventory[product.id] ?? {
+            stockroom: createEmptyCounts(),
+            salesfloors: {},
+          };
+          const rows: any[] = [];
+
+          const stockroomCounts = productState.stockroom ?? createEmptyCounts();
+          if (
+            stockroomCounts.good > 0 ||
+            stockroomCounts.damaged > 0 ||
+            stockroomCounts.expired > 0
+          ) {
+            rows.push({
+              report_id: report.id,
+              product_id: product.id,
+              salesfloor_id: null,
+              good_units: stockroomCounts.good,
+              damaged_units: stockroomCounts.damaged,
+              expired_units: stockroomCounts.expired,
+            });
+          }
+
+          salesfloors.forEach(salesfloor => {
+            const counts = productState.salesfloors?.[salesfloor.id] ?? createEmptyCounts();
+            if (
+              counts.good > 0 ||
+              counts.damaged > 0 ||
+              counts.expired > 0
+            ) {
+              rows.push({
+                report_id: report.id,
+                product_id: product.id,
+                salesfloor_id: salesfloorMap.get(salesfloor.id),
+                good_units: counts.good,
+                damaged_units: counts.damaged,
+                expired_units: counts.expired,
+              });
+            }
+          });
+
+          return rows;
+        });
+
+        if (inventoryRows.length > 0) {
+          const {error: inventoryError} = await supabase
+            .from('merchant_report_inventory')
+            .insert(inventoryRows);
+
+          if (inventoryError) throw inventoryError;
+        }
       }
 
-      if (onCreated)
+      if (onCreated) {
         onCreated({
           type: 'success',
           text: `Report for ${stablishment} created successfully.`,
         });
+      }
     } catch (error: any) {
       setFeedbackMsg({
         type: 'error',
@@ -188,51 +373,61 @@ export default function MerchantReportCreation({
     }
   };
 
-  const renderInventoryGrid = (
-    section: 'salesfloor' | 'stockroom',
-    title: string,
+  const renderInventoryInputs = (
+    product: any,
+    values: InventoryCounts,
+    isStockroom = false,
+    salesfloorId?: string,
   ) => (
-    <div class="inventory-section">
-      <h4>{title}</h4>
-      <div class="inventory-grid">
-        {productsList.map(product => (
-          <div class="inventory-product" key={`${section}-${product.id}`}>
-            <span>{product.name}</span>
-            <div class="inventory-inputs">
-              <mdui-text-field
-                type="number"
-                min="0"
-                label="Units"
-                variant="outlined"
-                value={String(inventory[product.id]?.[section].units ?? 0)}
-                onInput={(e: any) =>
-                  handleInventoryChange(
-                    product.id,
-                    section,
-                    'units',
-                    e.target.value,
-                  )
-                }
-              ></mdui-text-field>
-              <mdui-text-field
-                type="number"
-                min="0"
-                label="Packages"
-                variant="outlined"
-                value={String(inventory[product.id]?.[section].packages ?? 0)}
-                onInput={(e: any) =>
-                  handleInventoryChange(
-                    product.id,
-                    section,
-                    'packages',
-                    e.target.value,
-                  )
-                }
-              ></mdui-text-field>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div class="inventory-inputs">
+      <mdui-text-field
+        type="number"
+        min="0"
+        label="Good"
+        variant="outlined"
+        value={String(values.good ?? 0)}
+        onInput={(e: any) =>
+          handleInventoryChange(
+            product.id,
+            isStockroom ? 'stockroom' : 'salesfloor',
+            isStockroom ? null : salesfloorId ?? null,
+            'good',
+            e.target.value,
+          )
+        }
+      ></mdui-text-field>
+      <mdui-text-field
+        type="number"
+        min="0"
+        label="Damaged"
+        variant="outlined"
+        value={String(values.damaged ?? 0)}
+        onInput={(e: any) =>
+          handleInventoryChange(
+            product.id,
+            isStockroom ? 'stockroom' : 'salesfloor',
+            isStockroom ? null : salesfloorId ?? null,
+            'damaged',
+            e.target.value,
+          )
+        }
+      ></mdui-text-field>
+      <mdui-text-field
+        type="number"
+        min="0"
+        label="Expired"
+        variant="outlined"
+        value={String(values.expired ?? 0)}
+        onInput={(e: any) =>
+          handleInventoryChange(
+            product.id,
+            isStockroom ? 'stockroom' : 'salesfloor',
+            isStockroom ? null : salesfloorId ?? null,
+            'expired',
+            e.target.value,
+          )
+        }
+      ></mdui-text-field>
     </div>
   );
 
@@ -241,7 +436,7 @@ export default function MerchantReportCreation({
       <h3>Add Merchant Report</h3>
 
       <form onSubmit={handleCreateReport}>
-        <div>
+        <div class="field-grid">
           <mdui-select
             label="State"
             variant="outlined"
@@ -281,7 +476,7 @@ export default function MerchantReportCreation({
           required
         />
 
-        <div>
+        <div class="field-grid">
           <mdui-text-field
             label="Zone"
             variant="outlined"
@@ -301,21 +496,118 @@ export default function MerchantReportCreation({
           />
         </div>
 
+
+        <div class="field-grid">
+          <mdui-text-field
+            label="Arrival photo path"
+            variant="outlined"
+            value={arrivalPhotoPath}
+            onInput={(e: any) => setArrivalPhotoPath(e.target.value)}
+            required
+          ></mdui-text-field>
+
+          <mdui-text-field
+            label="Departure photo path"
+            variant="outlined"
+            value={departurePhotoPath}
+            onInput={(e: any) => setDeparturePhotoPath(e.target.value)}
+            required
+          ></mdui-text-field>
+        </div>
+
+        <mdui-text-field
+          label="Observations"
+          variant="outlined"
+          value={observations}
+          onInput={(e: any) => setObservations(e.target.value)}
+        ></mdui-text-field>
+
+        <label class="checkbox-row">
+          <input
+            type="checkbox"
+            checked={noInventory}
+            onChange={e => setNoInventory((e.target as HTMLInputElement).checked)}
+          />
+          <span>No inventory available for this visit</span>
+        </label>
+
         <mdui-divider></mdui-divider>
 
-        {productsList.length > 0 ? (
+        {productsList.length > 0 && !noInventory ? (
           <div class="inventory-section">
-            <div class="info-message">
-              <strong>Tip:</strong> Enter salesfloor and stockroom counts (units
-              and packages). Total units will be calculated automatically.
+            <div class="salesfloor-editor">
+              <h4>Salesfloor locations</h4>
+              {salesfloors.map(salesfloor => (
+                <div class="salesfloor-row" key={salesfloor.id}>
+                  <mdui-text-field
+                    label="Salesfloor name"
+                    variant="outlined"
+                    value={salesfloor.name}
+                    onInput={(e: any) =>
+                      handleSalesfloorNameChange(salesfloor.id, e.target.value)
+                    }
+                  ></mdui-text-field>
+                  {salesfloors.length > 1 && (
+                    <button
+                      type="button"
+                      class="secondary-button"
+                      onClick={() => removeSalesfloor(salesfloor.id)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button type="button" class="secondary-button" onClick={addSalesfloor}>
+                Add salesfloor
+              </button>
             </div>
 
-            {renderInventoryGrid('salesfloor', 'Salesfloor Inventory')}
-            {renderInventoryGrid('stockroom', 'Stockroom Inventory')}
+            <div class="info-message">
+              Enter the inventory count by product, location, and condition.
+            </div>
+
+            {salesfloors.map(salesfloor => (
+              <div class="inventory-section" key={`salesfloor-group-${salesfloor.id}`}>
+                <h4>{salesfloor.name || 'Salesfloor'}</h4>
+                <div class="inventory-grid">
+                  {productsList.map(product => (
+                    <div class="inventory-product" key={`${salesfloor.id}-${product.id}`}>
+                      <span>{product.name}</span>
+                      {renderInventoryInputs(
+                        product,
+                        inventory[product.id]?.salesfloors?.[salesfloor.id] ??
+                          createEmptyCounts(),
+                        false,
+                        salesfloor.id,
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div class="inventory-section">
+              <h4>Stockroom</h4>
+              <div class="inventory-grid">
+                {productsList.map(product => (
+                  <div class="inventory-product" key={`stockroom-${product.id}`}>
+                    <span>{product.name}</span>
+                    {renderInventoryInputs(
+                      product,
+                      inventory[product.id]?.stockroom ?? createEmptyCounts(),
+                      true,
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <p class="info-message">
-            Select a state and a client to load products for inventory tracking.
+            {noInventory
+              ? 'Inventory is intentionally omitted for this merchant report.'
+              : 'Select a state and a client to load products for inventory tracking.'}
           </p>
         )}
 

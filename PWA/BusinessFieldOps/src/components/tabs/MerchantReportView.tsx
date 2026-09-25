@@ -7,8 +7,10 @@ import {supabase} from '../../lib/supabase';
 
 type DetailItem = {
   product_id: number;
-  salesfloor_inventory: number;
-  stockroom_inventory: number;
+  location_name: string;
+  good_units: number;
+  damaged_units: number;
+  expired_units: number;
   total_units: number;
   products?: {id: number; name: string; units_per_package?: number} | null;
 };
@@ -48,13 +50,23 @@ export default function MerchantReportView({
             stablishment,
             client_id,
             merchant_id,
+            latitude,
+            longitude,
+            location_accuracy_m,
+            arrival_photo_path,
+            departure_photo_path,
+            observations,
+            no_inventory,
             clients ( id, name ),
             states ( id, name ),
             profiles:profiles!merchant_reports_merchant_id_fkey ( id, first_name, last_name, is_active ),
-            merchant_report_details (
+            merchant_report_salesfloors ( id, name ),
+            merchant_report_inventory (
               product_id,
-              salesfloor_inventory,
-              stockroom_inventory,
+              salesfloor_id,
+              good_units,
+              damaged_units,
+              expired_units,
               total_units,
               products ( id, name, units_per_package )
             )
@@ -67,14 +79,27 @@ export default function MerchantReportView({
         if (!mounted) return;
 
         if (data) {
+          const salesfloorMap = new Map(
+            ((data.merchant_report_salesfloors || []) as any[]).map(sf => [
+              sf.id,
+              sf.name,
+            ]),
+          );
+
           setReport(data);
-          const rawDetails = (data.merchant_report_details || []) as any[];
+          const rawDetails = (data.merchant_report_inventory || []) as any[];
+
           setDetails(
             rawDetails.map(d => ({
               product_id: d.product_id,
-              salesfloor_inventory: d.salesfloor_inventory,
-              stockroom_inventory: d.stockroom_inventory,
-              total_units: d.total_units,
+              location_name:
+                d.salesfloor_id != null
+                  ? salesfloorMap.get(d.salesfloor_id) || 'Salesfloor'
+                  : 'Stockroom',
+              good_units: d.good_units ?? 0,
+              damaged_units: d.damaged_units ?? 0,
+              expired_units: d.expired_units ?? 0,
+              total_units: d.total_units ?? 0,
               products: d.products ?? null,
             })),
           );
@@ -198,6 +223,47 @@ export default function MerchantReportView({
                 <span class="meta-label">Zone</span>
                 <span class="meta-value">{report.zone}</span>
               </div>
+              <div class="meta-row">
+                <span class="meta-label">GPS</span>
+                <span class="meta-value">
+                  {report.latitude != null && report.longitude != null
+                    ? `${report.latitude}, ${report.longitude}`
+                    : 'Not recorded'}
+                </span>
+              </div>
+              {report.location_accuracy_m != null && (
+                <div class="meta-row">
+                  <span class="meta-label">Accuracy</span>
+                  <span class="meta-value">{report.location_accuracy_m} m</span>
+                </div>
+              )}
+              {report.no_inventory && (
+                <div class="meta-row">
+                  <span class="meta-label">Inventory</span>
+                  <span class="meta-value">No inventory recorded</span>
+                </div>
+              )}
+            </div>
+
+            {report.observations && (
+              <div class="meta-row">
+                <span class="meta-label">Observations</span>
+                <span class="meta-value">{report.observations}</span>
+              </div>
+            )}
+
+            <div class="meta-row">
+              <span class="meta-label">Arrival photo</span>
+              <span class="meta-value">
+                {report.arrival_photo_path || 'Not recorded'}
+              </span>
+            </div>
+
+            <div class="meta-row">
+              <span class="meta-label">Departure photo</span>
+              <span class="meta-value">
+                {report.departure_photo_path || 'Not recorded'}
+              </span>
             </div>
 
             <mdui-divider></mdui-divider>
@@ -213,22 +279,24 @@ export default function MerchantReportView({
                 <div class="report-table-shell">
                   <div class="report-table-wrapper" ref={tableWrapperRef}>
                     <div
-                      class="inventory-table"
+                      class="inventory-table inventory-table-wide"
                       role="table"
                       aria-label="Merchant inventory table"
                     >
                       <div class="inventory-row inventory-head" role="row">
                         <div role="columnheader">Product</div>
                         <div role="columnheader">Units/Package</div>
-                        <div role="columnheader">Salesfloor</div>
-                        <div role="columnheader">Stockroom</div>
+                        <div role="columnheader">Location</div>
+                        <div role="columnheader">Good</div>
+                        <div role="columnheader">Damaged</div>
+                        <div role="columnheader">Expired</div>
                         <div role="columnheader">Total</div>
                       </div>
                       {details.map(d => (
                         <div
-                          class="inventory-row"
+                          class="inventory-row inventory-row-wide"
                           role="row"
-                          key={d.product_id}
+                          key={`${d.product_id}-${d.location_name}`}
                         >
                           <div role="cell">
                             {d.products?.name || `#${d.product_id}`}
@@ -236,8 +304,10 @@ export default function MerchantReportView({
                           <div role="cell">
                             {d.products?.units_per_package ?? '-'}
                           </div>
-                          <div role="cell">{d.salesfloor_inventory}</div>
-                          <div role="cell">{d.stockroom_inventory}</div>
+                          <div role="cell">{d.location_name}</div>
+                          <div role="cell">{d.good_units}</div>
+                          <div role="cell">{d.damaged_units}</div>
+                          <div role="cell">{d.expired_units}</div>
                           <div role="cell">{d.total_units}</div>
                         </div>
                       ))}

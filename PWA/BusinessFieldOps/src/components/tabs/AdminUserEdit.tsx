@@ -13,6 +13,7 @@ interface UserItem {
   id: string;
   first_name: string;
   last_name: string;
+  ci?: string | null;
   role: UserRole | string;
   is_active: boolean;
 }
@@ -28,6 +29,7 @@ export default function AdminUserEdit({
 }) {
   const [firstName, setFirstName] = useState(user.first_name);
   const [lastName, setLastName] = useState(user.last_name);
+  const [ci, setCi] = useState(user.ci ?? '');
   const [role, setRole] = useState<UserRole>('promoter');
   const [isActive, setIsActive] = useState(Boolean(user.is_active));
   const [loading, setLoading] = useState(false);
@@ -36,6 +38,7 @@ export default function AdminUserEdit({
   useEffect(() => {
     setFirstName(user.first_name);
     setLastName(user.last_name);
+    setCi(user.ci ?? '');
     setIsActive(Boolean(user.is_active));
 
     if (
@@ -56,6 +59,7 @@ export default function AdminUserEdit({
 
     const trimmedFirstName = firstName.trim();
     const trimmedLastName = lastName.trim();
+    const trimmedCi = ci.trim();
 
     if (!trimmedFirstName || !trimmedLastName) {
       setFeedbackMsg({
@@ -71,11 +75,12 @@ export default function AdminUserEdit({
       .update({
         first_name: trimmedFirstName,
         last_name: trimmedLastName,
+        ci: trimmedCi || null,
         role,
         is_active: isActive,
       })
       .eq('id', user.id)
-      .select('id, first_name, last_name, role, is_active')
+      .select('id, first_name, last_name, ci, role, is_active')
       .single();
 
     if (error) {
@@ -121,6 +126,13 @@ export default function AdminUserEdit({
             required
           />
         </div>
+
+        <mdui-text-field
+          label="CI / ID"
+          variant="outlined"
+          value={ci}
+          onInput={(e: any) => setCi(e.target.value)}
+        />
 
         <mdui-select
           label="System Role"
