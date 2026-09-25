@@ -31,7 +31,14 @@ export default function PromoterSales() {
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
 
   const reloadReports = async () => {
-    setLoading(true);
+    const cached = await offlineApi.getCache('promoter_reports');
+    if (cached && cached.length) {
+      setReports(cached as ReportItem[]);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const {data, error} = await supabase
         .from('promoter_reports')
@@ -56,11 +63,9 @@ export default function PromoterSales() {
       }
     } catch (err: any) {
       console.warn('Failed to load promoter reports, using cache', err?.message || err);
-      const cached = await offlineApi.getCache('promoter_reports');
-      setReports((cached ?? []) as ReportItem[]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {

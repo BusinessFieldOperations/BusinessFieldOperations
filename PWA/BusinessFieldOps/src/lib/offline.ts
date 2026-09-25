@@ -53,6 +53,18 @@ export async function getCache(key: string) {
 
 export async function saveDraft(type: string, payload: any, meta: any = {}) {
   const item = {type, payload, meta, created_at: new Date().toISOString()};
+  // simple dedupe: avoid identical payload for same type
+  const existing = await getDrafts(type);
+  const payloadJson = JSON.stringify(payload);
+  for (const d of existing) {
+    try {
+      if (JSON.stringify(d.payload) === payloadJson) {
+        return; // already saved
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
   await withStore('drafts', 'readwrite', store => store.add(item));
 }
 
@@ -77,8 +89,28 @@ export async function syncDrafts(supabase: any) {
   const results: Array<{id: number; ok: boolean; error?: any}> = [];
   for (const d of drafts) {
     try {
-      if (d.type === 'contacts') {
-        const {error} = await supabase.from('contacts').insert([d.payload]);
+      if (d.type === 'contacts' || d.type === 'contacts_create') {
+        // ensure we have an authenticated user to set owner_id
+        const {data: authData} = await supabase.auth.getUser();
+        const userId = authData?.user?.id ?? null;
+        const toInsert = {...d.payload};
+        if (!toInsert.owner_id && userId) toInsert.owner_id = userId;
+        if (!toInsert.owner_id) {
+          // cannot insert without owner_id, skip for now
+          results.push({id: d.id as number, ok: false, error: 'no-auth'});
+          continue;
+        }
+        const {error} = await supabase.from('contacts').insert([toInsert]);
+        if (error) throw error;
+      } else if (d.type === 'contacts_update') {
+        // update existing contact
+        const payload = d.payload || {};
+        const id = payload.id;
+        if (!id) {
+          results.push({id: d.id as number, ok: false, error: 'missing-id'});
+          continue;
+        }
+        const {error} = await supabase.from('contacts').update(payload).eq('id', id);
         if (error) throw error;
       } else if (d.type === 'promoter_reports') {
         // Assume payload has report and details arrays

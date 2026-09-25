@@ -4,7 +4,7 @@ import 'mdui/components/button.js';
 import 'mdui/components/select.js';
 import 'mdui/components/menu-item.js';
 import 'mdui/components/divider.js';
-import {supabase} from '../../lib/supabase';
+import {supabase, offlineApi} from '../../lib/supabase';
 
 type Feedback = {type: 'success' | 'error'; text: string};
 
@@ -99,8 +99,17 @@ export default function MerchantReportCreation({
 
   useEffect(() => {
     const loadStates = async () => {
-      const {data} = await supabase.from('states').select('*').order('name');
-      if (data) setStatesList(data);
+      const cached = await offlineApi.getCache('states');
+      if (cached && cached.length) setStatesList(cached);
+      try {
+        const {data} = await supabase.from('states').select('*').order('name');
+        if (data) {
+          setStatesList(data);
+          await offlineApi.saveCache('states', data);
+        }
+      } catch (e) {
+        // ignore network errors
+      }
     };
     loadStates();
   }, []);
@@ -115,13 +124,22 @@ export default function MerchantReportCreation({
 
     if (!selectedStateId) return;
 
-    const {data} = await supabase
-      .from('clients_states')
-      .select('clients ( id, name, rif )')
-      .eq('state_id', selectedStateId);
+    const cachedClients = await offlineApi.getCache(`clients:${selectedStateId}`);
+    if (cachedClients && cachedClients.length) setClientsList(cachedClients);
 
-    if (data) {
-      setClientsList(data.map((row: any) => row.clients));
+    try {
+      const {data, error} = await supabase
+        .from('clients_states')
+        .select('clients ( id, name, rif )')
+        .eq('state_id', selectedStateId);
+      if (error) throw error;
+      if (data) {
+        const clients = data.map((row: any) => row.clients);
+        setClientsList(clients);
+        await offlineApi.saveCache(`clients:${selectedStateId}`, clients);
+      }
+    } catch (err) {
+      // use cached clients if available
     }
   };
 
@@ -135,17 +153,27 @@ export default function MerchantReportCreation({
       return;
     }
 
-    const {data} = await supabase
-      .from('products')
-      .select('*')
-      .eq('client_id', selectedClientId);
+    // show cached products immediately if available
+    const cached = await offlineApi.getCache(`products:${selectedClientId}`);
+    if (cached && cached.length) setProductsList(cached);
 
-    if (data) {
-      setProductsList(data);
-      // do not pre-init inventory for all products; user selects products via search
-      setInventory({});
-      setSelectedProducts([]);
-      setProductSearch('');
+    try {
+      const {data, error} = await supabase
+        .from('products')
+        .select('*')
+        .eq('client_id', selectedClientId);
+
+      if (error) throw error;
+      if (data) {
+        setProductsList(data);
+        // do not pre-init inventory for all products; user selects products via search
+        setInventory({});
+        setSelectedProducts([]);
+        setProductSearch('');
+        await offlineApi.saveCache(`products:${selectedClientId}`, data);
+      }
+    } catch (err) {
+      // network failed — cached list already shown if available
     }
   };
 
@@ -327,12 +355,10 @@ export default function MerchantReportCreation({
         data: {user},
         error: userError,
       } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error('Could not authenticate user');
-
       const reportPayload = {
         state_id: Number(stateId),
         salesman_name: salesmanName,
-        merchant_id: user.id,
+        merchant_id: user?.id ?? null,
         zone,
         stablishment,
         client_id: clientId,
@@ -344,6 +370,18 @@ export default function MerchantReportCreation({
         observations: observations.trim() || null,
         no_inventory: noInventory,
       };
+
+      if (userError || !user) {
+        // save draft when user is not authenticated (offline)
+        await offlineApi.saveDraft('merchant_reports', {
+          report: {...reportPayload, created_at: new Date().toISOString()},
+          salesfloors: salesfloors.map(s => ({name: s.name})),
+          inventory,
+        });
+        setFeedbackMsg({type: 'success', text: 'Offline: report saved as draft and will be sent when online.'});
+        setLoading(false);
+        return;
+      }
 
       const {data: report, error: reportError} = await supabase
         .from('merchant_reports')

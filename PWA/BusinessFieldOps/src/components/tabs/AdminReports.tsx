@@ -6,7 +6,7 @@ import 'mdui/components/button-icon.js';
 
 import MerchantReportView from './MerchantReportView';
 import PromoterReportView from './PromoterReportView';
-import {supabase} from '../../lib/supabase';
+import {supabase, offlineApi} from '../../lib/supabase';
 
 type ReportRole = 'merchant' | 'promoter';
 
@@ -44,7 +44,19 @@ export default function AdminReports() {
     targetPage = page,
     targetSearch = searchTerm,
   ) => {
-    setLoading(true);
+    // show cached immediately to avoid waiting
+    const cachedMerchant = await offlineApi.getCache('merchant_reports');
+    const cachedPromoter = await offlineApi.getCache('promoter_reports');
+    if ((cachedMerchant && cachedMerchant.length) || (cachedPromoter && cachedPromoter.length)) {
+      const mergedCached: ReportItem[] = [
+        ...((cachedMerchant ?? []) as any[]).map(r => ({...r, role: 'merchant'})),
+        ...((cachedPromoter ?? []) as any[]).map(r => ({...r, role: 'promoter'})),
+      ].sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+      setReports(mergedCached.slice(0, PAGE_SIZE));
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
 
     try {
       const trimmed = targetSearch.trim();
@@ -119,6 +131,9 @@ export default function AdminReports() {
       const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
       setReports(mergedReports.slice(0, PAGE_SIZE));
+      // cache last 10 of each
+      await offlineApi.saveCache('merchant_reports', (merchantResult.data ?? []).slice(0, 10));
+      await offlineApi.saveCache('promoter_reports', (promoterResult.data ?? []).slice(0, 10));
       setPageCount(totalPages);
       if (targetPage > totalPages) {
         setPage(totalPages);

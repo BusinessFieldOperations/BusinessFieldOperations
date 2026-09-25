@@ -77,14 +77,21 @@ export default function CRMContacts({
   const [feedback, setFeedback] = useState<Feedback | null>(null);
 
   const fetchContacts = async (activeUserId: string | null) => {
-    if (!activeUserId) {
+    if (mode === 'self' && !activeUserId) {
       setContacts([]);
       setLoading(false);
       return;
     }
+    // show cache immediately to avoid long waits
+    const cached = await offlineApi.getCache(`contacts:${activeUserId}`);
+    if (cached && cached.length) {
+      setContacts(cached as ContactRow[]);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
 
     try {
-      setLoading(true);
       let query = supabase.from('contacts').select('*');
 
       if (mode === 'self') {
@@ -97,13 +104,10 @@ export default function CRMContacts({
       setContacts((data ?? []) as ContactRow[]);
       await offlineApi.saveCache(`contacts:${activeUserId}`, data ?? []);
     } catch (error: any) {
-      console.error('Failed to load contacts', error.message || error);
-      const cached = await offlineApi.getCache(`contacts:${activeUserId}`);
-      setContacts((cached ?? []) as ContactRow[]);
-      setFeedback({
-        type: 'error',
-        text: 'Unable to load CRM contacts right now. Using cached contacts.',
-      });
+      console.warn('Failed to refresh contacts from network', error.message || error);
+      if (!(cached && cached.length)) {
+        setFeedback({type: 'error', text: 'Unable to load CRM contacts right now.'});
+      }
     } finally {
       setLoading(false);
     }
@@ -136,11 +140,6 @@ export default function CRMContacts({
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
 
-    if (!userId) {
-      setFeedback({type: 'error', text: 'Your user session is not available.'});
-      return;
-    }
-
     const firstName = form.firstName.trim();
     const lastName = form.lastName.trim();
     const idDocument = form.idDocument.trim();
@@ -162,6 +161,20 @@ export default function CRMContacts({
       extra_fields: buildExtraFields(form),
     };
 
+    // allow creating while offline by saving a draft
+    if (!userId) {
+      try {
+        await offlineApi.saveDraft('contacts_create', {...payload, owner_id: null});
+        setFeedback({type: 'success', text: 'Offline: contact saved as draft and will be sent when online.'});
+        setForm(emptyForm);
+        setShowForm(false);
+      } catch (err) {
+        setFeedback({type: 'error', text: 'Unable to save draft locally.'});
+      }
+      return;
+    }
+
+    let savedAsDraft = false;
     try {
       if (editingContact) {
         const {error} = await supabase
@@ -170,9 +183,14 @@ export default function CRMContacts({
           .eq('id', editingContact.id);
 
         if (error) {
-          // save as draft when update fails
-          await offlineApi.saveDraft('contacts', {...payload, owner_id: userId});
-          throw error;
+          // save update as draft
+          await offlineApi.saveDraft('contacts_update', {...payload, id: editingContact.id, owner_id: userId});
+          savedAsDraft = true;
+          setFeedback({type: 'success', text: 'Update saved as draft and will sync when online.'});
+          setForm(emptyForm);
+          setEditingContact(null);
+          setShowForm(false);
+          return;
         }
 
         setFeedback({
@@ -185,9 +203,13 @@ export default function CRMContacts({
         ]);
 
         if (error) {
-          // save as draft when create fails
-          await offlineApi.saveDraft('contacts', {...payload, owner_id: userId});
-          throw error;
+          // save create as draft
+          await offlineApi.saveDraft('contacts_create', {...payload, owner_id: userId});
+          savedAsDraft = true;
+          setFeedback({type: 'success', text: 'Contact saved as draft and will be sent when online.'});
+          setForm(emptyForm);
+          setShowForm(false);
+          return;
         }
 
         setFeedback({
@@ -202,6 +224,20 @@ export default function CRMContacts({
       await fetchContacts(userId);
     } catch (error: any) {
       console.error('Failed to save contact', error.message || error);
+      // if network/type error and we haven't already saved a draft, save now
+      if (!savedAsDraft) {
+        try {
+          await offlineApi.saveDraft(editingContact ? 'contacts_update' : 'contacts_create', {...payload, owner_id: userId, id: editingContact?.id});
+          setFeedback({type: 'success', text: 'Offline: contact saved as draft and will sync when online.'});
+          setForm(emptyForm);
+          setEditingContact(null);
+          setShowForm(false);
+          return;
+        } catch (e) {
+          // fallthrough to error
+        }
+      }
+
       setFeedback({
         type: 'error',
         text: error.message || 'Unable to save contact.',

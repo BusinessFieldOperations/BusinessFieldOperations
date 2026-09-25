@@ -31,7 +31,15 @@ export default function MerchantReports() {
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
 
   const reloadReports = async () => {
-    setLoading(true);
+    // cache-first: show cached immediately
+    const cached = await offlineApi.getCache('merchant_reports');
+    if (cached && cached.length) {
+      setReports(cached as ReportItem[]);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const {data, error} = await supabase
         .from('merchant_reports')
@@ -52,16 +60,13 @@ export default function MerchantReports() {
       if (error) throw error;
       if (data) {
         setReports(data as any as ReportItem[]);
-        // cache only last 10
         await offlineApi.saveCache('merchant_reports', data.slice(0, 10));
       }
     } catch (err: any) {
       console.warn('Failed to load merchant reports from network, trying cache', err?.message || err);
-      const cached = await offlineApi.getCache('merchant_reports');
-      setReports((cached ?? []) as ReportItem[]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
