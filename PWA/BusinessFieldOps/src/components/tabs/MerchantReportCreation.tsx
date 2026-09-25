@@ -269,6 +269,37 @@ export default function MerchantReportCreation({
     setFeedbackMsg(null);
 
     try {
+      const errors: string[] = [];
+      if (!salesmanName.trim()) errors.push('Salesman name is required.');
+      if (!zone.trim()) errors.push('Zone is required.');
+      if (!stablishment.trim()) errors.push('Establishment is required.');
+      if (!clientId) errors.push('Client must be selected.');
+      if (!noInventory && selectedProducts.length === 0) errors.push('At least one product must be selected for the report.');
+
+      // Validate inventory numbers
+      if (!noInventory) {
+        for (const p of selectedProducts) {
+          const state = inventory[p.id];
+          if (!state) continue;
+          const stock = state.stockroom ?? createEmptyCounts();
+          if (stock.good < 0 || stock.damaged < 0 || stock.expired < 0) {
+            errors.push(`Product ${p.name}: stockroom counts must be >= 0.`);
+          }
+          for (const sf of salesfloors) {
+            const sfCounts = state.salesfloors?.[sf.id] ?? createEmptyCounts();
+            if (sfCounts.good < 0 || sfCounts.damaged < 0 || sfCounts.expired < 0) {
+              errors.push(`Product ${p.name} at ${sf.name}: counts must be >= 0.`);
+            }
+          }
+        }
+      }
+
+      if (errors.length > 0) {
+        setFeedbackMsg({type: 'error', text: errors.join(' ')});
+        setLoading(false);
+        return;
+      }
+
       const location = await getCurrentLocation();
       setLatitude(String(location.latitude));
       setLongitude(String(location.longitude));

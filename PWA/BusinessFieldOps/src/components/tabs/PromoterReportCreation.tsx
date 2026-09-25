@@ -195,6 +195,31 @@ export default function PromoterReportCreation({
     e.preventDefault();
     setLoading(true);
     setFeedbackMsg(null);
+    const errors: string[] = [];
+    // Basic required fields (match DB NOT NULL constraints)
+    if (!salesmanName.trim()) errors.push('Salesman name is required.');
+    if (!zone.trim()) errors.push('Zone is required.');
+    if (!stablishment.trim()) errors.push('Establishment is required.');
+    if (!clientId) errors.push('Client must be selected.');
+    if (selectedProducts.length === 0) errors.push('At least one product must be selected for the report.');
+
+    // Validate numeric inventory values
+    for (const p of selectedProducts) {
+      const inv = inventory[p.id];
+      if (!inv) continue;
+      const checks = [inv.initial, inv.final];
+      for (const section of checks) {
+        if (section.units < 0) errors.push(`Product ${p.name}: units must be >= 0.`);
+        if (section.packages < 0) errors.push(`Product ${p.name}: packages must be >= 0.`);
+      }
+      if ((inv.restocked ?? 0) < 0) errors.push(`Product ${p.name}: restocked units must be >= 0.`);
+    }
+
+    if (errors.length > 0) {
+      setFeedbackMsg({type: 'error', text: errors.join(' ')});
+      setLoading(false);
+      return;
+    }
 
     try {
       const location = await getCurrentLocation();
