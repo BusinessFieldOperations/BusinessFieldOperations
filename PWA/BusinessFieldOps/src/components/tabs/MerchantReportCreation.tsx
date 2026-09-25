@@ -268,39 +268,57 @@ export default function MerchantReportCreation({
     setLoading(true);
     setFeedbackMsg(null);
 
-    try {
-      const errors: string[] = [];
-      if (!salesmanName.trim()) errors.push('Salesman name is required.');
-      if (!zone.trim()) errors.push('Zone is required.');
-      if (!stablishment.trim()) errors.push('Establishment is required.');
-      if (!clientId) errors.push('Client must be selected.');
-      if (!noInventory && selectedProducts.length === 0) errors.push('At least one product must be selected for the report.');
+    const errors: string[] = [];
+    if (!salesmanName.trim()) errors.push('Salesman name is required.');
+    if (!zone.trim()) errors.push('Zone is required.');
+    if (!stablishment.trim()) errors.push('Establishment is required.');
+    if (!clientId) errors.push('Client must be selected.');
+    if (!arrivalPhotoPath.trim()) errors.push('Arrival photo path is required.');
+    if (!departurePhotoPath.trim()) errors.push('Departure photo path is required.');
+    if (!noInventory && selectedProducts.length === 0) errors.push('At least one product must be selected for the report.');
 
-      // Validate inventory numbers
-      if (!noInventory) {
-        for (const p of selectedProducts) {
-          const state = inventory[p.id];
-          if (!state) continue;
-          const stock = state.stockroom ?? createEmptyCounts();
-          if (stock.good < 0 || stock.damaged < 0 || stock.expired < 0) {
-            errors.push(`Product ${p.name}: stockroom counts must be >= 0.`);
-          }
-          for (const sf of salesfloors) {
-            const sfCounts = state.salesfloors?.[sf.id] ?? createEmptyCounts();
-            if (sfCounts.good < 0 || sfCounts.damaged < 0 || sfCounts.expired < 0) {
-              errors.push(`Product ${p.name} at ${sf.name}: counts must be >= 0.`);
-            }
+    if (!noInventory) {
+      const salesfloorNames = salesfloors.map(s => s.name.trim());
+      if (salesfloorNames.some(name => !name)) {
+        errors.push('Salesfloor names cannot be empty.');
+      }
+      if (new Set(salesfloorNames).size !== salesfloorNames.length) {
+        errors.push('Salesfloor names must be unique.');
+      }
+
+      for (const p of selectedProducts) {
+        const state = inventory[p.id];
+        if (!state) continue;
+        const stock = state.stockroom ?? createEmptyCounts();
+        if (stock.good < 0 || stock.damaged < 0 || stock.expired < 0) {
+          errors.push(`Product ${p.name}: stockroom counts must be >= 0.`);
+        }
+        for (const sf of salesfloors) {
+          const sfCounts = state.salesfloors?.[sf.id] ?? createEmptyCounts();
+          if (sfCounts.good < 0 || sfCounts.damaged < 0 || sfCounts.expired < 0) {
+            errors.push(`Product ${p.name} at ${sf.name}: counts must be >= 0.`);
           }
         }
       }
+    }
 
-      if (errors.length > 0) {
-        setFeedbackMsg({type: 'error', text: errors.join(' ')});
-        setLoading(false);
-        return;
-      }
+    if (errors.length > 0) {
+      setFeedbackMsg({type: 'error', text: errors.join(' ')});
+      setLoading(false);
+      return;
+    }
 
+    try {
       const location = await getCurrentLocation();
+      if (!Number.isFinite(location.latitude) || location.latitude < -90 || location.latitude > 90) {
+        throw new Error('Latitude must be between -90 and 90 degrees.');
+      }
+      if (!Number.isFinite(location.longitude) || location.longitude < -180 || location.longitude > 180) {
+        throw new Error('Longitude must be between -180 and 180 degrees.');
+      }
+      if (location.accuracy != null && location.accuracy < 0) {
+        throw new Error('Location accuracy cannot be negative.');
+      }
       setLatitude(String(location.latitude));
       setLongitude(String(location.longitude));
       setLocationAccuracy(String(location.accuracy ?? ''));
@@ -637,7 +655,7 @@ export default function MerchantReportCreation({
 
         <mdui-divider></mdui-divider>
 
-        {productsList.length > 0 && !noInventory ? (
+        {selectedProducts.length > 0 && !noInventory ? (
           <div class="inventory-section">
             <div class="salesfloor-editor">
               <h4>Salesfloor locations</h4>
@@ -728,7 +746,7 @@ export default function MerchantReportCreation({
           variant="filled"
           icon="check"
           loading={loading ? true : undefined}
-          disabled={productsList.length === 0}
+          disabled={selectedProducts.length === 0 && !noInventory}
         >
           Submit Report
         </mdui-button>

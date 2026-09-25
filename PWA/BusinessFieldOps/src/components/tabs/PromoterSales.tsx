@@ -8,7 +8,7 @@ import 'mdui/components/divider.js';
 
 import PromoterReportCreation from './PromoterReportCreation';
 import PromoterReportView from './PromoterReportView';
-import {supabase} from '../../lib/supabase';
+import {supabase, offlineApi} from '../../lib/supabase';
 
 interface ReportItem {
   id: number;
@@ -32,12 +32,11 @@ export default function PromoterSales() {
 
   const reloadReports = async () => {
     setLoading(true);
-
-    // Fetch from promoter_reports as per the database script
-    const {data, error} = await supabase
-      .from('promoter_reports')
-      .select(
-        `
+    try {
+      const {data, error} = await supabase
+        .from('promoter_reports')
+        .select(
+          `
         id,
         submitted_at,
         salesman_name,
@@ -46,15 +45,19 @@ export default function PromoterSales() {
         clients ( name ),
         states ( name )
       `,
-      )
-      .order('submitted_at', {ascending: false});
+        )
+        .order('submitted_at', {ascending: false})
+        .limit(10);
 
-    if (error) {
-      console.error('Failed to load reports', error.message);
-      setReports([]);
-    } else if (data) {
-      // cast: nested relationships return arrays or single objects based on schema
-      setReports(data as any as ReportItem[]);
+      if (error) throw error;
+      if (data) {
+        setReports(data as any as ReportItem[]);
+        await offlineApi.saveCache('promoter_reports', data.slice(0, 10));
+      }
+    } catch (err: any) {
+      console.warn('Failed to load promoter reports, using cache', err?.message || err);
+      const cached = await offlineApi.getCache('promoter_reports');
+      setReports((cached ?? []) as ReportItem[]);
     }
 
     setLoading(false);

@@ -5,7 +5,7 @@ import 'mdui/components/button-icon.js';
 import 'mdui/components/text-field.js';
 import 'mdui/components/card.js';
 
-import {supabase} from '../../lib/supabase';
+import {supabase, offlineApi} from '../../lib/supabase';
 
 type Feedback = {type: 'success' | 'error'; text: string};
 
@@ -91,19 +91,18 @@ export default function CRMContacts({
         query = query.eq('owner_id', activeUserId);
       }
 
-      const {data, error} = await query.order('last_name', {ascending: true});
+      const {data, error} = await query.order('last_name', {ascending: true}).limit(200);
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       setContacts((data ?? []) as ContactRow[]);
+      await offlineApi.saveCache(`contacts:${activeUserId}`, data ?? []);
     } catch (error: any) {
       console.error('Failed to load contacts', error.message || error);
-      setContacts([]);
+      const cached = await offlineApi.getCache(`contacts:${activeUserId}`);
+      setContacts((cached ?? []) as ContactRow[]);
       setFeedback({
         type: 'error',
-        text: 'Unable to load CRM contacts right now.',
+        text: 'Unable to load CRM contacts right now. Using cached contacts.',
       });
     } finally {
       setLoading(false);
@@ -171,6 +170,8 @@ export default function CRMContacts({
           .eq('id', editingContact.id);
 
         if (error) {
+          // save as draft when update fails
+          await offlineApi.saveDraft('contacts', {...payload, owner_id: userId});
           throw error;
         }
 
@@ -184,6 +185,8 @@ export default function CRMContacts({
         ]);
 
         if (error) {
+          // save as draft when create fails
+          await offlineApi.saveDraft('contacts', {...payload, owner_id: userId});
           throw error;
         }
 

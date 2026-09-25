@@ -4,7 +4,7 @@ import 'mdui/components/button.js';
 import 'mdui/components/select.js';
 import 'mdui/components/menu-item.js';
 import 'mdui/components/divider.js';
-import {supabase} from '../../lib/supabase';
+import {supabase, offlineApi} from '../../lib/supabase';
 
 type Feedback = {type: 'success' | 'error'; text: string};
 
@@ -106,9 +106,41 @@ export default function PromoterReportCreation({
       .eq('state_id', selectedStateId);
 
     if (data) {
-      setClientsList(data.map((row: any) => row.clients));
+      const clients = data.map((row: any) => row.clients);
+      setClientsList(clients);
+      await offlineApi.saveCache(`clients:${selectedStateId}`, clients);
     }
   };
+
+  useEffect(() => {
+    const handler = async (ev: BeforeUnloadEvent) => {
+      const hasData = salesmanName.trim() || zone.trim() || stablishment.trim() || selectedProducts.length > 0;
+      if (!hasData) return;
+      try {
+        await offlineApi.saveDraft('promoter_reports', {
+          report: {
+            state_id: Number(stateId) || null,
+            salesman_name: salesmanName,
+            promoter_id: null,
+            zone,
+            stablishment,
+            client_id: clientId || null,
+            latitude: latitude || null,
+            longitude: longitude || null,
+            location_accuracy_m: locationAccuracy || null,
+            arrival_photo_path: arrivalPhotoPath.trim() || null,
+            created_at: new Date().toISOString(),
+          },
+          details: selectedProducts.map(p => ({product_id: p.id, initial_inventory: inventory[p.id]?.initial?.units ?? 0, final_inventory: inventory[p.id]?.final?.units ?? 0, restocked_units: inventory[p.id]?.restocked ?? 0})),
+        });
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    window.addEventListener('beforeunload', handler as any);
+    return () => window.removeEventListener('beforeunload', handler as any);
+  }, [salesmanName, zone, stablishment, selectedProducts, inventory, stateId, clientId, latitude, longitude, locationAccuracy, arrivalPhotoPath]);
 
   const handleClientChange = async (e: any) => {
     const selectedClientId = e.target.value;
@@ -196,23 +228,34 @@ export default function PromoterReportCreation({
     setLoading(true);
     setFeedbackMsg(null);
     const errors: string[] = [];
-    // Basic required fields (match DB NOT NULL constraints)
+
     if (!salesmanName.trim()) errors.push('Salesman name is required.');
     if (!zone.trim()) errors.push('Zone is required.');
     if (!stablishment.trim()) errors.push('Establishment is required.');
     if (!clientId) errors.push('Client must be selected.');
+    if (!arrivalPhotoPath.trim()) errors.push('Arrival photo path is required.');
     if (selectedProducts.length === 0) errors.push('At least one product must be selected for the report.');
 
-    // Validate numeric inventory values
     for (const p of selectedProducts) {
       const inv = inventory[p.id];
       if (!inv) continue;
-      const checks = [inv.initial, inv.final];
-      for (const section of checks) {
-        if (section.units < 0) errors.push(`Product ${p.name}: units must be >= 0.`);
-        if (section.packages < 0) errors.push(`Product ${p.name}: packages must be >= 0.`);
+
+      const initialTotal = (inv.initial.packages ?? 0) * (p.units_per_package || 1) + (inv.initial.units ?? 0);
+      const finalTotal = (inv.final.packages ?? 0) * (p.units_per_package || 1) + (inv.final.units ?? 0);
+      const restockedTotal = inv.restocked ?? 0;
+
+      if (inv.initial.units < 0 || inv.initial.packages < 0) {
+        errors.push(`Product ${p.name}: initial inventory values must be >= 0.`);
       }
-      if ((inv.restocked ?? 0) < 0) errors.push(`Product ${p.name}: restocked units must be >= 0.`);
+      if (inv.final.units < 0 || inv.final.packages < 0) {
+        errors.push(`Product ${p.name}: final inventory values must be >= 0.`);
+      }
+      if (restockedTotal < 0) {
+        errors.push(`Product ${p.name}: restocked units must be >= 0.`);
+      }
+      if (finalTotal > initialTotal + restockedTotal) {
+        errors.push(`Product ${p.name}: final inventory cannot exceed initial inventory + restocked units.`);
+      }
     }
 
     if (errors.length > 0) {
@@ -223,6 +266,15 @@ export default function PromoterReportCreation({
 
     try {
       const location = await getCurrentLocation();
+      if (!Number.isFinite(location.latitude) || location.latitude < -90 || location.latitude > 90) {
+        throw new Error('Latitude must be between -90 and 90 degrees.');
+      }
+      if (!Number.isFinite(location.longitude) || location.longitude < -180 || location.longitude > 180) {
+        throw new Error('Longitude must be between -180 and 180 degrees.');
+      }
+      if (location.accuracy != null && location.accuracy < 0) {
+        throw new Error('Location accuracy cannot be negative.');
+      }
       setLatitude(String(location.latitude));
       setLongitude(String(location.longitude));
       setLocationAccuracy(String(location.accuracy ?? ''));
@@ -250,7 +302,42 @@ export default function PromoterReportCreation({
         .select()
         .single();
 
-      if (reportError) throw reportError;
+      if (reportError) {
+        // save as draft when insertion fails
+        await offlineApi.saveDraft('promoter_reports', {
+          report: {
+            state_id: Number(stateId),
+            salesman_name: salesmanName,
+            promoter_id: user.id,
+            zone,
+            stablishment,
+            client_id: clientId,
+            latitude: location.latitude,
+            longitude: location.longitude,
+            location_accuracy_m: location.accuracy,
+            arrival_photo_path: arrivalPhotoPath.trim() || null,
+            created_at: new Date().toISOString(),
+          },
+          details: selectedProducts.map(p => {
+            const unitsPerPackage = p.units_per_package || 1;
+            const initialInv =
+              (inventory[p.id]?.initial.packages ?? 0) * unitsPerPackage +
+              (inventory[p.id]?.initial.units ?? 0);
+            const finalInv =
+              (inventory[p.id]?.final.packages ?? 0) * unitsPerPackage +
+              (inventory[p.id]?.final.units ?? 0);
+            const restockedUnits = inventory[p.id]?.restocked ?? 0;
+            return {
+              product_id: p.id,
+              initial_inventory: initialInv,
+              final_inventory: finalInv,
+              restocked_units: restockedUnits,
+            };
+          }),
+        });
+
+        throw reportError;
+      }
 
       const detailsToInsert = selectedProducts.map(p => {
         const unitsPerPackage = p.units_per_package || 1;

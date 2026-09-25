@@ -8,7 +8,7 @@ import 'mdui/components/divider.js';
 
 import MerchantReportCreation from './MerchantReportCreation';
 import MerchantReportView from './MerchantReportView';
-import {supabase} from '../../lib/supabase';
+import {supabase, offlineApi} from '../../lib/supabase';
 
 interface ReportItem {
   id: number;
@@ -32,11 +32,11 @@ export default function MerchantReports() {
 
   const reloadReports = async () => {
     setLoading(true);
-
-    const {data, error} = await supabase
-      .from('merchant_reports')
-      .select(
-        `
+    try {
+      const {data, error} = await supabase
+        .from('merchant_reports')
+        .select(
+          `
         id,
         submitted_at,
         salesman_name,
@@ -45,14 +45,20 @@ export default function MerchantReports() {
         clients ( name ),
         states ( name )
       `,
-      )
-      .order('submitted_at', {ascending: false});
+        )
+        .order('submitted_at', {ascending: false})
+        .limit(10);
 
-    if (error) {
-      console.error('Failed to load merchant reports', error.message);
-      setReports([]);
-    } else if (data) {
-      setReports(data as any as ReportItem[]);
+      if (error) throw error;
+      if (data) {
+        setReports(data as any as ReportItem[]);
+        // cache only last 10
+        await offlineApi.saveCache('merchant_reports', data.slice(0, 10));
+      }
+    } catch (err: any) {
+      console.warn('Failed to load merchant reports from network, trying cache', err?.message || err);
+      const cached = await offlineApi.getCache('merchant_reports');
+      setReports((cached ?? []) as ReportItem[]);
     }
 
     setLoading(false);

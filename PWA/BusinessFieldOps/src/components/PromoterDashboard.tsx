@@ -19,7 +19,7 @@ export default function PromoterDashboard({userName}: Props) {
   const navItems = [
     {value: 'home', icon: 'home', label: 'Home'},
     {value: 'sales', icon: 'receipt_long', label: 'Sales'},
-    {value: 'zones', icon: 'place', label: 'Zones'},
+    // {value: 'zones', icon: 'place', label: 'Zones'},
     {value: 'contacts', icon: 'contacts', label: 'Contacts'},
   ];
 
@@ -38,7 +38,7 @@ export default function PromoterDashboard({userName}: Props) {
         />
       )}
       {activeTab === 'sales' && <PromoterSales />}
-      {activeTab === 'zones' && <PromoterZones />}
+      {/* {activeTab === 'zones' && <PromoterZones />} */}
       {activeTab === 'contacts' && <CRMContacts mode="self" title="CRM Contacts" />}
     </DashboardLayout>
   );

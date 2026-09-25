@@ -18,7 +18,7 @@ export default function MerchantDashboard({userName}: Props) {
   const navItems = [
     {value: 'home', icon: 'home', label: 'Home'},
     {value: 'reports', icon: 'inventory_2', label: 'Reports'},
-    {value: 'establishments', icon: 'place', label: 'Establishments'},
+    // {value: 'establishments', icon: 'place', label: 'Establishments'},
     {value: 'contacts', icon: 'contacts', label: 'Contacts'},
   ];
 
@@ -37,7 +37,7 @@ export default function MerchantDashboard({userName}: Props) {
         />
       )}
       {activeTab === 'reports' && <MerchantReports />}
-      {activeTab === 'establishments' && <MerchantEstablishments />}
+      {/* {activeTab === 'establishments' && <MerchantEstablishments />} */}
       {activeTab === 'contacts' && <CRMContacts mode="self" title="CRM Contacts" />}
     </DashboardLayout>
   );
