@@ -10,6 +10,9 @@ interface ProductItem {
   id: number;
   name: string;
   units_per_package: number | null;
+  sku?: string | null;
+  brand?: string | null;
+  category?: string | null;
 }
 
 export default function AdminClientView({
@@ -39,7 +42,7 @@ export default function AdminClientView({
 
       const {data: prods} = await supabase
         .from('products')
-        .select('id,name,units_per_package')
+        .select('id,name,units_per_package,sku,brand,category')
         .eq('client_id', clientId)
         .order('name');
       setProducts((prods as any) ?? []);
@@ -74,14 +77,14 @@ export default function AdminClientView({
           {loading && <p>Loading products...</p>}
 
           <div class="user-list">
-            {products.length === 0 ? (
+              {products.length === 0 ? (
               <div class="info-message">No products for this client.</div>
             ) : (
               products.map(p => (
                 <div class="user-box" key={p.id}>
                   <mdui-avatar icon="inventory_2"></mdui-avatar>
                   <div>
-                    <div>{p.name}</div>
+                    <div>{p.sku ? `${p.sku}: ${p.brand ?? '-'} - ${p.name}` : p.name}</div>
                     <div>Units per package: {p.units_per_package ?? '-'}</div>
                   </div>
                 </div>

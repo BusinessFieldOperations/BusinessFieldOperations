@@ -36,6 +36,8 @@ export default function PromoterReportCreation({
   const [statesList, setStatesList] = useState<any[]>([]);
   const [clientsList, setClientsList] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<any[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
 
   const [stateId, setStateId] = useState('');
   const [clientId, setClientId] = useState('');
@@ -111,10 +113,11 @@ export default function PromoterReportCreation({
   const handleClientChange = async (e: any) => {
     const selectedClientId = e.target.value;
     setClientId(selectedClientId);
-
     if (!selectedClientId) {
       setProductsList([]);
       setInventory({});
+      setSelectedProducts([]);
+      setProductSearch('');
       return;
     }
 
@@ -125,12 +128,37 @@ export default function PromoterReportCreation({
 
     if (data) {
       setProductsList(data);
-      setInventory(
-        Object.fromEntries(
-          data.map(product => [product.id, emptyCounts()]),
-        ),
-      );
+      // don't auto-init inventory for all products — user will add via search
+      setInventory({});
+      setSelectedProducts([]);
+      setProductSearch('');
     }
+  };
+
+  const filteredProducts = productsList.filter(p => {
+    const q = productSearch.trim().toLowerCase();
+    if (!q) return false;
+    return (
+      String(p.name || '').toLowerCase().includes(q) ||
+      String(p.sku || '').toLowerCase().includes(q) ||
+      String(p.brand || '').toLowerCase().includes(q) ||
+      String(p.category || '').toLowerCase().includes(q)
+    );
+  });
+
+  const addProductToSelection = (product: any) => {
+    if (selectedProducts.find(p => p.id === product.id)) return;
+    setSelectedProducts(cur => [...cur, product]);
+    setInventory(cur => ({...cur, [product.id]: emptyCounts()}));
+  };
+
+  const removeSelectedProduct = (productId: number) => {
+    setSelectedProducts(cur => cur.filter(p => p.id !== productId));
+    setInventory(cur => {
+      const next = {...cur};
+      delete next[productId];
+      return next;
+    });
   };
 
   const handleInventoryChange = (
@@ -199,7 +227,7 @@ export default function PromoterReportCreation({
 
       if (reportError) throw reportError;
 
-      const detailsToInsert = productsList.map(p => {
+      const detailsToInsert = selectedProducts.map(p => {
         const unitsPerPackage = p.units_per_package || 1;
 
         const initialInv =
@@ -247,9 +275,9 @@ export default function PromoterReportCreation({
     <div class="inventory-section">
       <h4>{title}</h4>
       <div class="inventory-grid">
-        {productsList.map(product => (
+        {selectedProducts.map(product => (
           <div class="inventory-product" key={`${section}-${product.id}`}>
-            <span>{product.name}</span>
+            <span>{product.sku ? `${product.sku}: ${product.brand ?? '-'} - ${product.name}` : product.name}</span>
             <div class="inventory-inputs">
               <mdui-text-field
                 type="number"
@@ -324,6 +352,59 @@ export default function PromoterReportCreation({
           </mdui-select>
         </div>
 
+          <div class="field-grid">
+            <mdui-text-field
+              label="Search products"
+              variant="outlined"
+              value={productSearch}
+              onInput={(e: any) => setProductSearch(e.target.value)}
+              disabled={!clientId}
+            />
+          </div>
+
+          {productSearch && filteredProducts.length > 0 && (
+            <div class="user-list">
+              {filteredProducts.map(p => (
+                <div class="user-box" key={`search-${p.id}`}>
+                  <div>
+                    <div>{p.sku ? `${p.sku}: ${p.brand ?? '-'} - ${p.name}` : p.name}</div>
+                    <div>Units per package: {p.units_per_package ?? '-'}</div>
+                  </div>
+                  <div>
+                    <mdui-button
+                      variant="outlined"
+                      onClick={() => addProductToSelection(p)}
+                    >
+                      Add
+                    </mdui-button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selectedProducts.length > 0 && (
+            <div class="items-box">
+              <h4>Selected products</h4>
+              <div class="user-list">
+                {selectedProducts.map(p => (
+                  <div class="user-box" key={`sel-${p.id}`}>
+                    <div>
+                      <div>{p.sku ? `${p.sku}: ${p.brand ?? '-'} - ${p.name}` : p.name}</div>
+                    </div>
+                    <div>
+                      <mdui-button-icon
+                        icon="delete"
+                        variant="outlined"
+                        onClick={() => removeSelectedProduct(p.id)}
+                      ></mdui-button-icon>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         <mdui-text-field
           label="Salesman (Name and Surname)"
           variant="outlined"
@@ -363,22 +444,21 @@ export default function PromoterReportCreation({
 
         <mdui-divider></mdui-divider>
 
-        {productsList.length > 0 ? (
+        {selectedProducts.length > 0 ? (
           <div class="inventory-section">
             <div class="info-message">
               <strong>Tip:</strong> Enter the starting stock, closing stock, and
               units restocked during the shift.
             </div>
-
             {renderInventoryGrid('initial', 'Initial Inventory')}
             {renderInventoryGrid('final', 'Final Inventory')}
 
             <div class="inventory-section">
               <h4>Restocked Units</h4>
               <div class="inventory-grid">
-                {productsList.map(product => (
+                {selectedProducts.map(product => (
                   <div class="inventory-product" key={`restocked-${product.id}`}>
-                    <span>{product.name}</span>
+                    <span>{product.sku ? `${product.sku}: ${product.brand ?? '-'} - ${product.name}` : product.name}</span>
                     <div class="inventory-inputs">
                       <mdui-text-field
                         type="number"
@@ -415,7 +495,7 @@ export default function PromoterReportCreation({
           variant="filled"
           icon="check"
           loading={loading ? true : undefined}
-          disabled={productsList.length === 0}
+          disabled={selectedProducts.length === 0}
         >
           Submit Report
         </mdui-button>

@@ -103,6 +103,9 @@ export default function AdminClientEdit({
             name: p.name,
             units_per_package: p.units_per_package ?? null,
             client_id: clientId,
+            sku: p.sku ?? null,
+            brand: p.brand ?? null,
+            category: p.category ?? null,
           },
         ])
         .select()
@@ -235,10 +238,10 @@ export default function AdminClientEdit({
                   <div class="user-box" key={p.id}>
                     <mdui-avatar icon="inventory_2"></mdui-avatar>
 
-                    <div>
-                      <div>{p.name}</div>
-                      <mdui-badge>{p.units_per_package ?? '-'}</mdui-badge>
-                    </div>
+                          <div>
+                            <div>{p.sku ? `${p.sku}: ${p.brand ?? '-'} - ${p.name}` : p.name}</div>
+                            <mdui-badge>{p.units_per_package ?? '-'}</mdui-badge>
+                          </div>
 
                     <div>
                       <mdui-button-icon

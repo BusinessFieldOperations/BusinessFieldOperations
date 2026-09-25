@@ -12,7 +12,13 @@ type DetailItem = {
   damaged_units: number;
   expired_units: number;
   total_units: number;
-  products?: {id: number; name: string; units_per_package?: number} | null;
+  products?: {
+    id: number;
+    name: string;
+    units_per_package?: number;
+    sku?: string | null;
+    brand?: string | null;
+  } | null;
 };
 
 export default function MerchantReportView({
@@ -68,7 +74,7 @@ export default function MerchantReportView({
               damaged_units,
               expired_units,
               total_units,
-              products ( id, name, units_per_package )
+              products ( id, name, units_per_package, sku, brand )
             )
           `,
           )
@@ -299,7 +305,11 @@ export default function MerchantReportView({
                           key={`${d.product_id}-${d.location_name}`}
                         >
                           <div role="cell">
-                            {d.products?.name || `#${d.product_id}`}
+                            {d.products
+                              ? d.products.sku
+                                ? `${d.products.sku}: ${d.products.brand ?? '-'} - ${d.products.name}`
+                                : d.products.name
+                              : `#${d.product_id}`}
                           </div>
                           <div role="cell">
                             {d.products?.units_per_package ?? '-'}

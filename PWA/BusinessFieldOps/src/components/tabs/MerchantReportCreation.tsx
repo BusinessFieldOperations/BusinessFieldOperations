@@ -44,6 +44,8 @@ export default function MerchantReportCreation({
   const [statesList, setStatesList] = useState<any[]>([]);
   const [clientsList, setClientsList] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<any[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
   const [salesfloors, setSalesfloors] = useState<SalesfloorEntry[]>([
     {id: createSalesfloorId(), name: 'Salesfloor 1'},
   ]);
@@ -139,20 +141,38 @@ export default function MerchantReportCreation({
       .eq('client_id', selectedClientId);
 
     if (data) {
-      const nextInventory = Object.fromEntries(
-        data.map(product => [
-          product.id,
-          {
-            stockroom: createEmptyCounts(),
-            salesfloors: Object.fromEntries(
-              salesfloors.map(salesfloor => [salesfloor.id, createEmptyCounts()]),
-            ),
-          },
-        ]),
-      );
       setProductsList(data);
-      setInventory(nextInventory);
+      // do not pre-init inventory for all products; user selects products via search
+      setInventory({});
+      setSelectedProducts([]);
+      setProductSearch('');
     }
+  };
+
+  const filteredProducts = productsList.filter(p => {
+    const q = productSearch.trim().toLowerCase();
+    if (!q) return false;
+    return (
+      String(p.name || '').toLowerCase().includes(q) ||
+      String(p.sku || '').toLowerCase().includes(q) ||
+      String(p.brand || '').toLowerCase().includes(q) ||
+      String(p.category || '').toLowerCase().includes(q)
+    );
+  });
+
+  const addProductToSelection = (product: any) => {
+    if (selectedProducts.find(p => p.id === product.id)) return;
+    setSelectedProducts(cur => [...cur, product]);
+    setInventory(cur => ({...cur, [product.id]: {stockroom: createEmptyCounts(), salesfloors: Object.fromEntries(salesfloors.map(s => [s.id, createEmptyCounts()]))}}));
+  };
+
+  const removeSelectedProduct = (productId: number) => {
+    setSelectedProducts(cur => cur.filter(p => p.id !== productId));
+    setInventory(cur => {
+      const next = {...cur};
+      delete next[productId];
+      return next;
+    });
   };
 
   const updateSalesfloorList = (nextSalesfloors: SalesfloorEntry[]) => {
@@ -304,7 +324,7 @@ export default function MerchantReportCreation({
           ]),
         );
 
-        const inventoryRows = productsList.flatMap(product => {
+        const inventoryRows = selectedProducts.flatMap(product => {
           const productState = inventory[product.id] ?? {
             stockroom: createEmptyCounts(),
             salesfloors: {},
@@ -467,6 +487,59 @@ export default function MerchantReportCreation({
           </mdui-select>
         </div>
 
+        <div class="field-grid">
+          <mdui-text-field
+            label="Search products"
+            variant="outlined"
+            value={productSearch}
+            onInput={(e: any) => setProductSearch(e.target.value)}
+            disabled={!clientId}
+          />
+        </div>
+
+        {productSearch && filteredProducts.length > 0 && (
+          <div class="user-list">
+            {filteredProducts.map(p => (
+              <div class="user-box" key={`search-${p.id}`}>
+                <div>
+                  <div>{p.sku ? `${p.sku}: ${p.brand ?? '-'} - ${p.name}` : p.name}</div>
+                  <div>Units per package: {p.units_per_package ?? '-'}</div>
+                </div>
+                <div>
+                  <mdui-button
+                    variant="outlined"
+                    onClick={() => addProductToSelection(p)}
+                  >
+                    Add
+                  </mdui-button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {selectedProducts.length > 0 && (
+          <div class="items-box">
+            <h4>Selected products</h4>
+            <div class="user-list">
+              {selectedProducts.map(p => (
+                <div class="user-box" key={`sel-${p.id}`}>
+                  <div>
+                    <div>{p.sku ? `${p.sku}: ${p.brand ?? '-'} - ${p.name}` : p.name}</div>
+                  </div>
+                  <div>
+                    <mdui-button-icon
+                      icon="delete"
+                      variant="outlined"
+                      onClick={() => removeSelectedProduct(p.id)}
+                    ></mdui-button-icon>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <mdui-text-field
           label="Salesman (Name and Surname)"
           variant="outlined"
@@ -570,19 +643,19 @@ export default function MerchantReportCreation({
             {salesfloors.map(salesfloor => (
               <div class="inventory-section" key={`salesfloor-group-${salesfloor.id}`}>
                 <h4>{salesfloor.name || 'Salesfloor'}</h4>
-                <div class="inventory-grid">
-                  {productsList.map(product => (
-                    <div class="inventory-product" key={`${salesfloor.id}-${product.id}`}>
-                      <span>{product.name}</span>
-                      {renderInventoryInputs(
-                        product,
-                        inventory[product.id]?.salesfloors?.[salesfloor.id] ??
-                          createEmptyCounts(),
-                        false,
-                        salesfloor.id,
-                      )}
-                    </div>
-                  ))}
+                    <div class="inventory-grid">
+                      {selectedProducts.map(product => (
+                        <div class="inventory-product" key={`${salesfloor.id}-${product.id}`}>
+                          <span>{product.sku ? `${product.sku}: ${product.brand ?? '-'} - ${product.name}` : product.name}</span>
+                          {renderInventoryInputs(
+                            product,
+                            inventory[product.id]?.salesfloors?.[salesfloor.id] ??
+                              createEmptyCounts(),
+                            false,
+                            salesfloor.id,
+                          )}
+                        </div>
+                      ))}
                 </div>
               </div>
             ))}
@@ -590,9 +663,9 @@ export default function MerchantReportCreation({
             <div class="inventory-section">
               <h4>Stockroom</h4>
               <div class="inventory-grid">
-                {productsList.map(product => (
+                {selectedProducts.map(product => (
                   <div class="inventory-product" key={`stockroom-${product.id}`}>
-                    <span>{product.name}</span>
+                    <span>{product.sku ? `${product.sku}: ${product.brand ?? '-'} - ${product.name}` : product.name}</span>
                     {renderInventoryInputs(
                       product,
                       inventory[product.id]?.stockroom ?? createEmptyCounts(),

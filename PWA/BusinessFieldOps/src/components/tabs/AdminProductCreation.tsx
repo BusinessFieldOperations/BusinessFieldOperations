@@ -5,6 +5,9 @@ import 'mdui/components/button.js';
 type Product = {
   name: string;
   units_per_package?: number;
+  sku?: string;
+  brand?: string;
+  category?: string;
 };
 
 export default function AdminProductCreation({
@@ -18,12 +21,18 @@ export default function AdminProductCreation({
 }) {
   const [name, setName] = useState('');
   const [units, setUnits] = useState<number | ''>('');
+  const [sku, setSku] = useState('');
+  const [brand, setBrand] = useState('');
+  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (initial) {
       setName(initial.name || '');
       setUnits(initial.units_per_package ?? '');
+      setSku((initial as any).sku ?? '');
+      setBrand((initial as any).brand ?? '');
+      setCategory((initial as any).category ?? '');
     }
   }, [initial]);
 
@@ -35,10 +44,16 @@ export default function AdminProductCreation({
       ...initial,
       name: name.trim(),
       units_per_package: Number(units) || undefined,
+      sku: sku.trim() || undefined,
+      brand: brand.trim() || undefined,
+      category: category.trim() || undefined,
     } as Product & {id?: number};
     onAdd(product as Product);
     setName('');
     setUnits('');
+    setSku('');
+    setBrand('');
+    setCategory('');
     setLoading(false);
   };
 
@@ -53,6 +68,24 @@ export default function AdminProductCreation({
           value={name}
           onInput={(e: any) => setName(e.target.value)}
           required
+        />
+        <mdui-text-field
+          label="SKU"
+          variant="outlined"
+          value={sku}
+          onInput={(e: any) => setSku(e.target.value)}
+        />
+        <mdui-text-field
+          label="Brand"
+          variant="outlined"
+          value={brand}
+          onInput={(e: any) => setBrand(e.target.value)}
+        />
+        <mdui-text-field
+          label="Category"
+          variant="outlined"
+          value={category}
+          onInput={(e: any) => setCategory(e.target.value)}
         />
         <mdui-text-field
           label="Units per package"

@@ -23,7 +23,7 @@ export default function AdminClientCreation({
   const [name, setName] = useState('');
   const [rif, setRif] = useState('');
   const [products, setProducts] = useState<
-    Array<{name: string; units_per_package?: number}>
+    Array<{name: string; units_per_package?: number; sku?: string; brand?: string; category?: string}>
   >([]);
   const [showProductCreate, setShowProductCreate] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ export default function AdminClientCreation({
   >([]);
   const [selectedStates, setSelectedStates] = useState<number[]>([]);
 
-  const handleAddProduct = (p: {name: string; units_per_package?: number}) => {
+  const handleAddProduct = (p: {name: string; units_per_package?: number; sku?: string; brand?: string; category?: string}) => {
     setProducts(cur => [...cur, p]);
     setShowProductCreate(false);
   };
@@ -69,6 +69,9 @@ export default function AdminClientCreation({
           name: p.name,
           units_per_package: p.units_per_package || null,
           client_id: clientData.id,
+          sku: p.sku || null,
+          brand: p.brand || null,
+          category: p.category || null,
         }));
         const {error: prodErr} = await supabase
           .from('products')
@@ -176,7 +179,7 @@ export default function AdminClientCreation({
                     <mdui-avatar icon="inventory_2"></mdui-avatar>
 
                     <div>
-                      <div>{p.name}</div>
+                      <div>{p.sku ? `${p.sku}: ${p.brand ?? '-'} - ${p.name}` : p.name}</div>
                       <mdui-badge>{p.units_per_package ?? '-'}</mdui-badge>
                     </div>
 

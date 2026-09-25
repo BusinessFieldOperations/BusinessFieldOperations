@@ -11,7 +11,13 @@ type DetailItem = {
   final_inventory: number;
   restocked_units: number;
   total_sales: number;
-  products?: {id: number; name: string; units_per_package?: number} | null;
+  products?: {
+    id: number;
+    name: string;
+    units_per_package?: number;
+    sku?: string | null;
+    brand?: string | null;
+  } | null;
 };
 
 export default function PromoterReportView({
@@ -62,7 +68,7 @@ export default function PromoterReportView({
               final_inventory,
               restocked_units,
               total_sales,
-              products ( id, name, units_per_package )
+              products ( id, name, units_per_package, sku, brand )
             )
           `,
           )
@@ -260,7 +266,11 @@ export default function PromoterReportView({
                           key={d.product_id}
                         >
                           <div role="cell">
-                            {d.products?.name || `#${d.product_id}`}
+                            {d.products
+                              ? d.products.sku
+                                ? `${d.products.sku}: ${d.products.brand ?? '-'} - ${d.products.name}`
+                                : d.products.name
+                              : `#${d.product_id}`}
                           </div>
                           <div role="cell">
                             {d.products?.units_per_package ?? '-'}
