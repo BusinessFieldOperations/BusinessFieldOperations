@@ -1,4 +1,7 @@
 {
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ],
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "target": "ES2022",
@@ -14,8 +17,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "skipLibCheck": true 
+    "skipLibCheck": true ,
+    "allowJs": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
-  "exclude": ["node_modules","dist"]
+  "exclude": ["node_modules","dist"],
 }

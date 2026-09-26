@@ -1,15 +1,19 @@
-import { defineConfig, loadEnv } from 'vite';
+import {paraglideVitePlugin} from '@inlang/paraglide-js';
+import {defineConfig, loadEnv} from 'vite';
 import preact from '@preact/preset-vite';
-import { VitePWA } from 'vite-plugin-pwa';
+import {VitePWA} from 'vite-plugin-pwa';
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
-export default defineConfig(async ({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
+export default defineConfig(async ({mode}) => {
+  const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [
+      paraglideVitePlugin({
+        project: './project.inlang',
+        outdir: './src/paraglide',
+      }),
       preact(),
       VitePWA({
         registerType: 'autoUpdate',
@@ -28,23 +32,23 @@ export default defineConfig(async ({ mode }) => {
               src: '/favicon.svg',
               sizes: 'any',
               type: 'image/svg+xml',
-              purpose: 'any'
+              purpose: 'any',
             },
             {
               src: '/favicon-192.png',
               sizes: '192x192',
               type: 'image/png',
-              purpose: 'any'
+              purpose: 'any',
             },
             {
               src: '/favicon-512.png',
               sizes: '512x512',
               type: 'image/png',
-              purpose: 'any'
-            }
-          ]
-        }
-      })
+              purpose: 'any',
+            },
+          ],
+        },
+      }),
     ],
 
     // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -58,17 +62,15 @@ export default defineConfig(async ({ mode }) => {
       host: host || false,
       hmr: host
         ? {
-          protocol: 'ws',
-          host,
-          port: 1421,
-        }
+            protocol: 'ws',
+            host,
+            port: 1421,
+          }
         : undefined,
       watch: {
         // 3. tell Vite to ignore watching `src-tauri`
         ignored: ['**/src-tauri/**'],
       },
     },
-  }
-}
-
-);
+  };
+});
