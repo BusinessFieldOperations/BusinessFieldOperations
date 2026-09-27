@@ -5,24 +5,15 @@ import { defineConfig } from "eslint/config";
 import { FlatCompat } from "@eslint/eslintrc";
 
 const compat = new FlatCompat({
-	baseDirectory: __dirname,
+  baseDirectory: __dirname,
 });
 
-
-let hasIgnoresFile = false;
-try {
-  require.resolve("./eslint.ignores.js");
-  hasIgnoresFile = true;
-} catch {
-  // eslint.ignores.js doesn't exist
-}
-
-const gtsIgnores = hasIgnoresFile
-  ? [{ ignores: require("./eslint.ignores.js") }]
-  : [];
+const gtsIgnores = [
+  { ignores: require("./eslint.ignores.cjs") }
+];
 
 const gts = require("gts");
-const {default: preact} = require("eslint-config-preact");
+const { default: preact } = require("eslint-config-preact");
 
 export default defineConfig([
   ...gtsIgnores,
@@ -41,7 +32,7 @@ export default defineConfig([
     },
   },
   {
-    
+
     files: ["**/*.css"],
     plugins: { css },
     language: "css/css",
