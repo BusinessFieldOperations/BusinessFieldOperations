@@ -4,6 +4,9 @@
   ],
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
