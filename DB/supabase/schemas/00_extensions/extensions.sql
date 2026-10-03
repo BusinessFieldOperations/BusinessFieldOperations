@@ -1,1 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS pgcrypto
+WITH
+    SCHEMA extensions;
