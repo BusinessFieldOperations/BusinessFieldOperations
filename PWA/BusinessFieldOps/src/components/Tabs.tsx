@@ -5,13 +5,12 @@ import Report from './tabs/Report';
 import Contacts from './tabs/Contacts';
 import Users from './tabs/Users';
 
-// from supabase...
-export type Role = 'promoter' | 'merchant' | 'administrator'; // add your other roles
+import {UserRole} from '@/lib/profiles'
 
 /** Data every dashboard passes down; tabs pick what they need. */
 export interface DashboardContext {
   userName: string;
-  role: Role;
+  role: UserRole;
 }
 
 interface TabDefinition {
