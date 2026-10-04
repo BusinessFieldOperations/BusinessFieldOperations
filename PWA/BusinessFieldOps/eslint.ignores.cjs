@@ -4,4 +4,5 @@ module.exports = [
   '**/tmp/**',
   '**/build/**',
   '**/*.log',
+  'src/lib/database.types.ts',
 ];
