@@ -5,7 +5,7 @@ import Report from './tabs/Report';
 import Contacts from './tabs/Contacts';
 import Users from './tabs/Users';
 
-import {UserRole} from '@/lib/profiles'
+import {UserRole} from '@/lib/profiles';
 
 /** Data every dashboard passes down; tabs pick what they need. */
 export interface DashboardContext {
