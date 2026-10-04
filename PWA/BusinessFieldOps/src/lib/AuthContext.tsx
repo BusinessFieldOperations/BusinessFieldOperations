@@ -1,5 +1,5 @@
 import {createContext} from 'preact';
-import {useContext, useEffect, useRef, useState} from 'preact/hooks';
+import {useContext, useEffect, useRef, useState, useMemo} from 'preact/hooks';
 import type {ComponentChildren} from 'preact';
 import type {Session} from '@supabase/supabase-js';
 
@@ -52,27 +52,25 @@ export function AuthProvider({children}: {children: ComponentChildren}) {
       setProfileLoading(true);
       const userId = newSession.user.id;
 
-      window.setTimeout(() => {
-        if (!mounted || requestId !== profileRequest) return;
+      if (!mounted || requestId !== profileRequest) return;
 
-        void getProfile(userId)
-          .then(userProfile => {
-            if (mounted && requestId === profileRequest) {
-              setProfile(userProfile);
-            }
-          })
-          .catch(error => {
-            console.error('Failed to retrieve profile:', error);
-            if (mounted && requestId === profileRequest) {
-              setProfileError(true);
-            }
-          })
-          .finally(() => {
-            if (mounted && requestId === profileRequest) {
-              setProfileLoading(false);
-            }
-          });
-      }, 0);
+      void getProfile(userId)
+        .then(userProfile => {
+          if (mounted && requestId === profileRequest) {
+            setProfile(userProfile);
+          }
+        })
+        .catch(error => {
+          console.error('Failed to retrieve profile:', error);
+          if (mounted && requestId === profileRequest) {
+            setProfileError(true);
+          }
+        })
+        .finally(() => {
+          if (mounted && requestId === profileRequest) {
+            setProfileLoading(false);
+          }
+        });
     };
 
     const {data: listener} = supabase.auth.onAuthStateChange(
@@ -113,13 +111,12 @@ export function AuthProvider({children}: {children: ComponentChildren}) {
     };
   }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{session, loading, profile, profileLoading, profileError}}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({session, loading, profile, profileLoading, profileError}),
+    [session, loading, profile, profileLoading, profileError],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
