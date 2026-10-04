@@ -33,4 +33,3 @@ coverage/
 
 public/
 src-tauri/icons/
-src/lib/database.types.ts
