@@ -1,4 +1,9 @@
 {
+	"name": "businessfieldops-db",
+	"private": true,
+	"scripts": {
+		"generate:types": "pnpm supabase gen types typescript --schema public > ../PWA/BusinessFieldOps/src/lib/database.types.ts"
+	},
 	"devDependencies": {
 		"supabase": "^2.118.0"
 	}

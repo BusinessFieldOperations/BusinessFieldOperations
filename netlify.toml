@@ -1,13 +1,13 @@
 [build]
-  base = "PWA/BusinessFieldOps"
-  publish = "dist"
-  command = "pnpm run icons --only-pwa && pnpm run build"
+  base = "."
+  publish = "PWA/BusinessFieldOps/dist"
+  command = "pnpm --dir DB install --frozen-lockfile && pnpm --dir PWA/BusinessFieldOps install --frozen-lockfile && pnpm --dir DB run generate:types && pnpm --dir PWA/BusinessFieldOps run icons --only-pwa && pnpm --dir PWA/BusinessFieldOps run build"
 
 [context.deploy-preview]
-  command = "pnpm run icons --only-pwa && pnpm run build"
+  command = "pnpm --dir DB install --frozen-lockfile && pnpm --dir PWA/BusinessFieldOps install --frozen-lockfile && pnpm --dir DB run generate:types && pnpm --dir PWA/BusinessFieldOps run icons --only-pwa && pnpm --dir PWA/BusinessFieldOps run build"
 
 [context.branch-deploy]
-  command = "pnpm run icons --only-pwa && pnpm run build"
+  command = "pnpm --dir DB install --frozen-lockfile && pnpm --dir PWA/BusinessFieldOps install --frozen-lockfile && pnpm --dir DB run generate:types && pnpm --dir PWA/BusinessFieldOps run icons --only-pwa && pnpm --dir PWA/BusinessFieldOps run build"
 
 [[redirects]]
   from = "/*"
