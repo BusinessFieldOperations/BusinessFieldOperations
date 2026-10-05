@@ -27,6 +27,10 @@ jobs:
         working-directory: PWA/BusinessFieldOps/
         run: pnpm install --frozen-lockfile
 
+      - name: Compile Paraglide
+        working-directory: PWA/BusinessFieldOps/
+        run: pnpm run translations
+
       - name: Compile
         working-directory: PWA/BusinessFieldOps/
         run: pnpm run compile
@@ -56,6 +60,10 @@ jobs:
       - name: Install dependencies
         working-directory: PWA/BusinessFieldOps/
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare
+        working-directory: PWA/BusinessFieldOps/
+        run: pnpm run prepare
 
       - name: Build
         working-directory: PWA/BusinessFieldOps/
