@@ -1,0 +1,14 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "password": "Password",
+  "email": "Email",
+  "signin" : "Sign In",
+  "home" : "Home",
+  "reports" : "Reports",
+  "users" : "Users",
+  "contacts" : "Contacts",
+  "clients" : "Clients",
+  "brands" : "Brands",
+  "establishments" : "Establishments",
+  "signed_in" : "Signed in"
+}

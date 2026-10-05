@@ -14,6 +14,7 @@ import {useLocation} from 'wouter-preact';
 
 import MainTitle from '@/components/MainTitle';
 import {supabase} from '@/lib/supabase';
+import {m} from '@/paraglide/messages.js';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -36,7 +37,7 @@ export default function Login() {
       return;
     }
 
-    snackbar({message: 'Signed in', placement: 'top'});
+    snackbar({message: m.signed_in(), placement: 'top'});
 
     navigate('/dashboard');
   };
@@ -49,7 +50,7 @@ export default function Login() {
 
           <form class="login-form" onSubmit={handleSubmit} noValidate={false}>
             <mdui-text-field
-              label="Email"
+              label={m.email()}
               type="email"
               variant="outlined"
               autocomplete="email"
@@ -61,7 +62,7 @@ export default function Login() {
             />
 
             <mdui-text-field
-              label="Password"
+              label={m.password()}
               type="password"
               variant="outlined"
               toggle-password
@@ -80,7 +81,7 @@ export default function Login() {
               loading={loading}
               disabled={loading}
             >
-              Sign in
+              {m.signin()}
             </mdui-button>
           </form>
         </mdui-card>

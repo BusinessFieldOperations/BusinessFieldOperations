@@ -7,6 +7,8 @@ import Users from './tabs/Users';
 
 import {UserRole} from '@/lib/profiles';
 
+import {m} from '@/paraglide/messages.js';
+
 /** Data every dashboard passes down; tabs pick what they need. */
 export interface DashboardContext {
   userName: string;
@@ -22,22 +24,22 @@ interface TabDefinition {
 export const TABS = {
   home: {
     icon: 'home',
-    label: 'Home',
+    label: m.home(),
     render: () => <Home />,
   },
   reports: {
     icon: 'analytics',
-    label: 'Reports',
+    label: m.reports(),
     render: () => <Report />,
   },
   contacts: {
     icon: 'contacts',
-    label: 'Contacts',
+    label: m.contacts(),
     render: () => <Contacts />,
   },
   users: {
     icon: 'manage_accounts',
-    label: 'Users',
+    label: m.users(),
     render: () => <Users />,
   },
 } satisfies Record<string, TabDefinition>;
