@@ -1,7 +1,7 @@
 import {createContext} from 'preact';
-import {useContext, useEffect, useRef, useState, useMemo} from 'preact/hooks';
+import {useContext, useEffect, useRef, useState, useMemo, useCallback} from 'preact/hooks';
 import type {ComponentChildren} from 'preact';
-import type {Session} from '@supabase/supabase-js';
+import type {Session, AuthError} from '@supabase/supabase-js';
 
 import {getProfile} from '@/lib/profiles';
 import type {UserProfile} from '@/lib/profiles';
@@ -13,6 +13,7 @@ interface AuthState {
   profile: UserProfile | null;
   profileLoading: boolean;
   profileError: boolean;
+  signOut: () => Promise<{error: AuthError | null}>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthState>({
   profile: null,
   profileLoading: true,
   profileError: false,
+  signOut: () => supabase.auth.signOut(),
 });
 
 export function AuthProvider({children}: {children: ComponentChildren}) {
@@ -111,10 +113,12 @@ export function AuthProvider({children}: {children: ComponentChildren}) {
     };
   }, []);
 
-  const value = useMemo(
-    () => ({session, loading, profile, profileLoading, profileError}),
-    [session, loading, profile, profileLoading, profileError],
-  );
+const signOut = useCallback(() => supabase.auth.signOut(), []);
+
+const value = useMemo(
+  () => ({session, loading, profile, profileLoading, profileError, signOut}),
+  [session, loading, profile, profileLoading, profileError, signOut],
+);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
