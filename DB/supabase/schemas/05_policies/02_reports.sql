@@ -13,6 +13,12 @@ CREATE POLICY merchant_reports_insert ON public.merchant_reports
   WITH CHECK (
     merchant_id = (SELECT auth.uid())
     AND (SELECT private.current_user_role()) = 'merchant'
+    AND EXISTS (
+      SELECT 1 FROM public.tasks AS t
+      WHERE t.id = merchant_reports.task_id
+        AND t.assigned_to = (SELECT auth.uid())
+        AND t.completed_at IS NULL
+    )
   );
 
 CREATE POLICY merchant_reports_admin_delete ON public.merchant_reports
@@ -82,6 +88,12 @@ CREATE POLICY promoter_reports_insert ON public.promoter_reports
   WITH CHECK (
     promoter_id = (SELECT auth.uid())
     AND (SELECT private.current_user_role()) = 'promoter'
+    AND EXISTS (
+      SELECT 1 FROM public.tasks AS t
+      WHERE t.id = promoter_reports.task_id
+        AND t.assigned_to = (SELECT auth.uid())
+        AND t.completed_at IS NULL
+    )
   );
 
 CREATE POLICY promoter_reports_admin_delete ON public.promoter_reports

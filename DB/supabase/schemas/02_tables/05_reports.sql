@@ -13,7 +13,16 @@ CREATE TABLE IF NOT EXISTS public.merchant_reports (
   location_accuracy_m REAL CHECK (location_accuracy_m >= 0),
   observations TEXT,
   no_inventory BOOLEAN NOT NULL DEFAULT FALSE,
-  CONSTRAINT fk_merchant_reports_client_state FOREIGN KEY (client_id, state_id) REFERENCES public.client_states (client_id, state_id) ON DELETE RESTRICT
+  task_id UUID NOT NULL,
+
+  CONSTRAINT fk_merchant_reports_client_state
+    FOREIGN KEY (client_id, state_id)
+    REFERENCES public.client_states (client_id, state_id)
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_merchant_reports_task
+    FOREIGN KEY (task_id, merchant_id, establishment_id)
+    REFERENCES public.tasks (id, assigned_to, establishment_id)
+    ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS public.merchant_report_salesfloors (
@@ -50,7 +59,16 @@ CREATE TABLE IF NOT EXISTS public.promoter_reports (
   latitude DOUBLE PRECISION CHECK (latitude BETWEEN -90 AND 90),
   longitude DOUBLE PRECISION CHECK (longitude BETWEEN -180 AND 180),
   location_accuracy_m REAL CHECK (location_accuracy_m >= 0),
-  CONSTRAINT fk_promoter_reports_client_state FOREIGN KEY (client_id, state_id) REFERENCES public.client_states (client_id, state_id) ON DELETE RESTRICT
+  task_id UUID NOT NULL,
+
+  CONSTRAINT fk_promoter_reports_client_state
+    FOREIGN KEY (client_id, state_id)
+    REFERENCES public.client_states (client_id, state_id)
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_promoter_reports_task
+    FOREIGN KEY (task_id, promoter_id, establishment_id)
+    REFERENCES public.tasks (id, assigned_to, establishment_id)
+    ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS public.promoter_report_details (
@@ -67,3 +85,7 @@ CREATE TABLE IF NOT EXISTS public.promoter_report_details (
     final_inventory <= initial_inventory + restocked_units
   )
 );
+
+
+CREATE INDEX IF NOT EXISTS idx_merchant_reports_task_id ON public.merchant_reports (task_id);
+CREATE INDEX IF NOT EXISTS idx_promoter_reports_task_id ON public.promoter_reports (task_id);

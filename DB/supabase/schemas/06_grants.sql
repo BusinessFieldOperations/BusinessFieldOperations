@@ -6,6 +6,7 @@ REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON
   public.profiles,
   public.contacts,
+  public.tasks,
   public.states,
   public.legal_identity,
   public.clients,
