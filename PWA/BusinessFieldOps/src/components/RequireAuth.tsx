@@ -1,13 +1,15 @@
 import {useLocation} from 'wouter-preact';
 import {useEffect, useState} from 'preact/hooks';
 import type {ComponentChildren} from 'preact';
+
 import 'mdui/components/button.js';
+import { snackbar } from 'mdui/functions/snackbar.js';
 
 import {useAuth} from '@/lib/AuthContext';
-import {supabase} from '@/lib/supabase';
 
 export function RequireAuth({children}: {children: ComponentChildren}) {
-  const {session, loading, profile, profileLoading, profileError} = useAuth();
+  const {session, loading, profile, profileLoading, profileError, signOut} =
+    useAuth();
   const [, navigate] = useLocation();
   const [signOutError, setSignOutError] = useState(false);
 
@@ -44,7 +46,7 @@ export function RequireAuth({children}: {children: ComponentChildren}) {
           variant="filled"
           icon="logout"
           onClick={async () => {
-            const {error} = await supabase.auth.signOut();
+            const {error} = await signOut();
             setSignOutError(Boolean(error));
           }}
         >
