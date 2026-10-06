@@ -10,5 +10,11 @@
   "clients" : "Clientes",
   "brands" : "Marcas",
   "establishments" : "Establecimientos",
-  "signed_in" : "Session Iniciada"
+  "signed_in" : "Sesión Iniciada",
+  "dashboard" : "Panel",
+  "active" : "Activo",
+  "inactive" : "Inactivo",
+  "merchant" : "Mercaderista",
+  "promoter" : "Promotor",
+  "administrator" : "Administrador"
 }

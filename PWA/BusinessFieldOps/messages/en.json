@@ -10,5 +10,11 @@
   "clients" : "Clients",
   "brands" : "Brands",
   "establishments" : "Establishments",
-  "signed_in" : "Signed in"
+  "signed_in" : "Signed in",
+  "dashboard" : "Dashboard",
+  "active" : "Active",
+  "inactive" : "Inactive",
+  "merchant" : "Merchant",
+  "promoter" : "Promoter",
+  "administrator" : "Administrator"
 }
