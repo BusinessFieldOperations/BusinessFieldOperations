@@ -5,6 +5,6 @@
 		"generate:types": "supabase gen types typescript --schema public > ../PWA/BusinessFieldOps/src/lib/database.types.ts"
 	},
 	"devDependencies": {
-		"supabase": "^2.118.0"
+		"supabase": "^2.119.0"
 	}
 }
