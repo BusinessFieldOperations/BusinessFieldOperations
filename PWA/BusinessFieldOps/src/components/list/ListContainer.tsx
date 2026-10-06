@@ -8,9 +8,9 @@ import './ListContainer.css';
 
 /** Props of {@link ListContainer}. */
 export interface ListContainerProps extends Omit<
-    JSX.HTMLAttributes<HTMLDivElement>,
-    'class' | 'className'
-  > {
+  JSX.HTMLAttributes<HTMLDivElement>,
+  'class' | 'className'
+> {
   showAdd?: boolean;
   showSearch?: boolean;
   addLabel?: string;
@@ -48,11 +48,7 @@ export function ListContainer({
             />
           ) : null}
           {showAdd ? (
-            <mdui-fab
-              icon="add"
-              aria-label={addLabel}
-              onClick={onAddClick}
-            />
+            <mdui-fab icon="add" aria-label={addLabel} onClick={onAddClick} />
           ) : null}
         </div>
       ) : null}

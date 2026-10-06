@@ -1,5 +1,12 @@
 import {createContext} from 'preact';
-import {useContext, useEffect, useRef, useState, useMemo, useCallback} from 'preact/hooks';
+import {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'preact/hooks';
 import type {ComponentChildren} from 'preact';
 import type {Session, AuthError} from '@supabase/supabase-js';
 
@@ -113,12 +120,12 @@ export function AuthProvider({children}: {children: ComponentChildren}) {
     };
   }, []);
 
-const signOut = useCallback(() => supabase.auth.signOut(), []);
+  const signOut = useCallback(() => supabase.auth.signOut(), []);
 
-const value = useMemo(
-  () => ({session, loading, profile, profileLoading, profileError, signOut}),
-  [session, loading, profile, profileLoading, profileError, signOut],
-);
+  const value = useMemo(
+    () => ({session, loading, profile, profileLoading, profileError, signOut}),
+    [session, loading, profile, profileLoading, profileError, signOut],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

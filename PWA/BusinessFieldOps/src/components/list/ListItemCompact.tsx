@@ -16,10 +16,5 @@ export function ListItemCompact({
   className,
   ...rest
 }: ListItemCompactProps): JSX.Element {
-  return (
-    <ListItem
-      {...rest}
-      className={joinClasses('compact', className)}
-    />
-  );
+  return <ListItem {...rest} className={joinClasses('compact', className)} />;
 }

@@ -5,13 +5,13 @@ import {joinClasses} from './classNames';
 import './ListItem.css';
 
 export type ListItemDetails = readonly [ComponentChild?, ComponentChild?];
-export type ListItemAction = (event?: MouseEvent) => void;
+export type ListItemAction = () => void;
 
 /** Props of {@link ListItem}. */
 export interface ListItemProps extends Omit<
-    JSX.HTMLAttributes<HTMLLIElement>,
-    'class' | 'className' | 'children' | 'disabled'
-  > {
+  JSX.HTMLAttributes<HTMLLIElement>,
+  'class' | 'className' | 'children' | 'disabled'
+> {
   icon?: ComponentChildren;
   headline: ComponentChild;
   details?: ListItemDetails;
@@ -31,27 +31,23 @@ export function ListItem({
   itemAction,
   ...rest
 }: ListItemProps): JSX.Element {
-  const classes = joinClasses(
-    'list-item',
-    disabled && 'disabled',
-    className
-  );
+  const classes = joinClasses('list-item', disabled && 'disabled', className);
 
   return (
     <li {...rest} class={classes}>
       {icon ? (
-        <div class="icon" onClick={(event) => itemAction?.(event)}>
+        <div class="icon" onClick={() => itemAction?.()}>
           {icon}
         </div>
       ) : null}
-      <div class="text" onClick={(event) => itemAction?.(event)}>
+      <div class="text" onClick={() => itemAction?.()}>
         <div class="headline">{headline}</div>
         {details?.map((row, index) =>
           row ? (
             <div class="detail" key={index}>
               {row}
             </div>
-          ) : null
+          ) : null,
         )}
       </div>
       {actions ? <div class="actions">{actions}</div> : null}

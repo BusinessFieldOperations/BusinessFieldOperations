@@ -3,7 +3,6 @@ import {useEffect, useState} from 'preact/hooks';
 import type {ComponentChildren} from 'preact';
 
 import 'mdui/components/button.js';
-import { snackbar } from 'mdui/functions/snackbar.js';
 
 import {useAuth} from '@/lib/AuthContext';
 
