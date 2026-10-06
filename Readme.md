@@ -12,10 +12,11 @@ Business Field Operations is a App that helps you manage your business operation
 ### Structure
 
 ```
-Frontend        -> PWA
+Frontend (Dev)  -> PWA
                    Preact (React/SPA)
                    Tauri [Bundler]
                    Material 3 [UI]
+                   Paraglide [i18n]
                    PDF.js [report generation]
 Backend         -> Postgresql [db]
 
@@ -23,7 +24,7 @@ Providers (Dev) -> Netlify (WebApp)
                 -> Supabase
 ```
 
-### Folder Stucture
+### Folder Structure
 
 ```
 
@@ -43,39 +44,32 @@ Scripts/ (Automation)
 - `.gitignore` for each main folder (WebApp, Backend, Docs etc)
 - Conventional Commits format [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
     - types been:  fix, feat, build, CI, CD, docs ...
-    - scopes been: sqlite, tauri, PWA, i18n...
+    - scopes been: db, tauri, PWA, i18n, supabase...
 
-### TODO
+### Roadmap/ToDo
 
-- [ ] WebApp
-- [ ] Tauri Builder
-- [ ] Local DB
-- [ ] Remote DB
-- [ ] Google Spreadsheets API
-- [ ] PDF reports
-- [ ] Better Readme
-- [ ] CI/CD
-- [ ] Test Suite
-- [ ] i18n
-- [ ] User Manual
+- [ ] Better Readme (yes even better)
+- [ ] Handle `error.message` translations
+- [x] Github CI/CD: PWA lint/test and build
+- [ ] Github CI/CD: DB lint/test
+- [ ] PDF report download
+- [ ] User profile image (supabase? workspaces?)
+- [x] i18n support
+- [ ] Report images (workspaces)
+- [ ] User manual/guide
+- [ ] Developer manual/guide
+- [ ] User invitation tokens (give a user a on use URL to create a user (username and photo))
+- [ ] Embed location in photos
+- [ ] Better CRM
+- [ ] MainTitle handle text or images
 
-### Roadmap
+#### Tabs
 
-- 0.1v
-    - db (sql) ~Conceptual~ and Logical design
-    - db (provider) API details, security constrains, access time etc
-    - pwa (splash) UI
-    - pwa (login) UI, and server side
-    - pwa (register) Logic and security constrains
-
-...
-
-- 1.0v (demo goals)
-    - pwa (ui/ux) Functional Login, Register, Three users, Dashboard, Exports (pdf, xlsx...), Camera (security, location)...
-    - db (ui/ux) Physical design, cost per usage estimate etc
-    - tauri (app) working apk, desktop app [maybe]
-    - docs (manual) basic user manual (maybe build it in the app) [maybe]
-
-## Known Issues
-
-- Report/users loading must be on groups (to avoid load big databases)
+- [ ] Home, User profile, Tasks
+- [ ] Tasks tab (user and admin assign)
+- [ ] Contacts
+- [ ] Reports
+- [ ] Establishments
+- [ ] Brands
+- [ ] Product
+- [ ] Clients
