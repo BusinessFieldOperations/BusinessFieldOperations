@@ -1,0 +1,74 @@
+.list-item {
+  /* Tunable from outside (or by variants such as ListItemCompact). */
+  --list-item-min-height: 56px;
+  --list-item-padding-block: 12px;
+  --list-item-padding-inline: 16px;
+  --list-item-gap: 16px;
+  --list-item-icon-size: 24px;
+  --list-item-headline-size: var(--mdui-typescale-body-large-size);
+  --list-item-headline-line-height: var(--mdui-typescale-body-large-line-height);
+  --list-item-detail-size: var(--mdui-typescale-body-medium-size);
+  --list-item-detail-line-height: var(--mdui-typescale-body-medium-line-height);
+  --list-item-disabled-opacity: 0.38;
+
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--list-item-gap);
+  min-height: var(--list-item-min-height);
+  padding: var(--list-item-padding-block) var(--list-item-padding-inline);
+  list-style: none;
+  color: rgb(var(--mdui-color-on-surface));
+}
+
+.icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--list-item-icon-size);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.icon > mdui-icon {
+  font-size: inherit;
+}
+
+/* The text takes the remaining width; min-width lets ellipsis work in flex. */
+.text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.headline,
+.detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headline {
+  font-size: var(--list-item-headline-size);
+  line-height: var(--list-item-headline-line-height);
+}
+
+.detail {
+  font-size: var(--list-item-detail-size);
+  line-height: var(--list-item-detail-line-height);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+
+.disabled {
+  opacity: var(--list-item-disabled-opacity);
+}

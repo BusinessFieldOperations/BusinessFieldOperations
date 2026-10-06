@@ -1,0 +1,15 @@
+/*
+ * Two classes on purpose: this beats `.list-item` regardless of the order in
+ * which the stylesheets are loaded.
+ */
+.list-item.compact {
+  --list-item-min-height: 48px;
+  --list-item-padding-block: 4px;
+  --list-item-padding-inline: 16px;
+  --list-item-gap: 12px;
+  --list-item-icon-size: 20px;
+  --list-item-headline-size: var(--mdui-typescale-body-medium-size);
+  --list-item-headline-line-height: var(--mdui-typescale-body-medium-line-height);
+  --list-item-detail-size: var(--mdui-typescale-body-small-size);
+  --list-item-detail-line-height: var(--mdui-typescale-body-small-line-height);
+}
