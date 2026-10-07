@@ -15,6 +15,7 @@ export interface ListContainerProps extends Omit<
   showSearch?: boolean;
   addLabel?: string;
   searchLabel?: string;
+  listLabel?: string;
   onAddClick?: () => void;
   onSearchClick?: () => void;
   className?: string;
@@ -25,6 +26,7 @@ export function ListContainer({
   showSearch = false,
   addLabel,
   searchLabel,
+  listLabel,
   onAddClick,
   onSearchClick,
   className,
@@ -33,7 +35,7 @@ export function ListContainer({
 }: ListContainerProps): JSX.Element {
   return (
     <div {...rest} class={joinClasses('list-container', className)}>
-      <ul class="items" role="list">
+      <ul class="items" role="list" aria-label={listLabel}>
         {children}
       </ul>
       {showSearch || showAdd ? (

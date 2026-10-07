@@ -1,5 +1,4 @@
 .list-item {
-  /* Tunable from outside (or by variants such as ListItemCompact). */
   --list-item-min-height: 56px;
   --list-item-padding-block: 12px;
   --list-item-padding-inline: 16px;
@@ -19,6 +18,10 @@
   padding: var(--list-item-padding-block) var(--list-item-padding-inline);
   list-style: none;
   color: rgb(var(--mdui-color-on-surface));
+}
+
+.list-item:hover {
+  background:rgb(var(--mdui-color-surface-bright));
 }
 
 .icon {
