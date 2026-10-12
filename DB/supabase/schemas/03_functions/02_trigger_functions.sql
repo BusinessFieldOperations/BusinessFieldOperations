@@ -5,7 +5,7 @@ LANGUAGE plpgsql
 SET search_path = ''
 AS $$
 BEGIN
-  NEW.updated_at := now();
+  NEW.updated_at := CURRENT_TIMESTAMP;
   RETURN NEW;
 END;
 $$;

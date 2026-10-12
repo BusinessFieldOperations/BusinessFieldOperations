@@ -27,8 +27,24 @@ GRANT SELECT, INSERT ON
   public.promoter_report_details
 TO authenticated;
 
+REVOKE ALL ON public.reports_feed FROM anon;
+GRANT SELECT ON public.reports_feed TO authenticated;
+
 -- Admins delete whole reports; children go away through ON DELETE CASCADE.
 GRANT DELETE ON
   public.merchant_reports,
   public.promoter_reports
 TO authenticated;
+
+
+--- Reports as jsonb
+
+REVOKE ALL ON FUNCTION public.submit_merchant_report (jsonb) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.submit_promoter_report (jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.submit_merchant_report (jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.submit_promoter_report (jsonb) TO authenticated;
+
+--- Contacts as jsonb
+
+REVOKE ALL ON FUNCTION public.submit_contact (jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.submit_contact (jsonb) TO authenticated;
