@@ -2,9 +2,9 @@
 CREATE TABLE IF NOT EXISTS public.merchant_reports (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   -- Must be frozen with the first Send click, never alter
-  captured_at TIMESTAMP WITH TIMESTAMPTZ NOT NULL,
+  captured_at TIMESTAMPTZ NOT NULL,
   -- When the server received it.
-  submitted_at TIMESTAMP WITH TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  submitted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   state_id INTEGER NOT NULL REFERENCES public.states (id),
   client_id UUID NOT NULL REFERENCES public.clients (id),
   salesman_name TEXT NOT NULL,
@@ -56,8 +56,8 @@ CREATE TABLE IF NOT EXISTS public.merchant_report_inventory (
 -- Promoter
 CREATE TABLE IF NOT EXISTS public.promoter_reports (
   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  captured_at TIMESTAMP WITH TIMESTAMPTZ NOT NULL,
-  submitted_at TIMESTAMP WITH TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  captured_at TIMESTAMPTZ NOT NULL,
+  submitted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   state_id INTEGER REFERENCES public.states (id),
   client_id UUID REFERENCES public.clients (id),
   salesman_name TEXT NOT NULL,
