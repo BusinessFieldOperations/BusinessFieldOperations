@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
 CREATE TABLE IF NOT EXISTS public.products (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
-  client_id UUID REFERENCES public.clients (id) ON DELETE RESTRICT,
+  client_id UUID NOT NULL REFERENCES public.clients (id) ON DELETE RESTRICT,
   units_per_package NUMERIC NOT NULL CHECK (units_per_package > 0),
   brand TEXT REFERENCES public.brands (name) ON UPDATE CASCADE ON DELETE RESTRICT,
   category TEXT REFERENCES public.categories (name) ON UPDATE CASCADE ON DELETE RESTRICT,
