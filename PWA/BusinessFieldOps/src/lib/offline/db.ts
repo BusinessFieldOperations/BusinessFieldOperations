@@ -43,10 +43,10 @@ export const REFERENCE_TABLES = {
     indexes: ['establishment_id'],
   },
   tasks: {primaryKey: 'id', indexes: ['assigned_to', 'establishment_id']},
-  merchant_reports: {primaryKey: 'id', indexes: ['merchant_id']},
+  merchant_reports: {primaryKey: 'id', indexes: ['merchant_id', 'task_id']},
   merchant_report_salesfloors: {primaryKey: 'id'},
   merchant_report_inventory: {primaryKey: 'id'},
-  promoter_reports: {primaryKey: 'id', indexes: ['promoter_id']},
+  promoter_reports: {primaryKey: 'id', indexes: ['promoter_id', 'task_id']},
   promoter_report_details: {
     primaryKey: '[report_id+product_id]',
     indexes: ['product_id'],
