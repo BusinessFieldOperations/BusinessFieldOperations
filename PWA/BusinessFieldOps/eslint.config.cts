@@ -2,6 +2,7 @@ import globals from 'globals';
 import css from '@eslint/css';
 import {defineConfig} from 'eslint/config';
 import {FlatCompat} from '@eslint/eslintrc';
+import type {Linter} from 'eslint';
 
 const compat = new FlatCompat({baseDirectory: __dirname});
 
@@ -12,13 +13,13 @@ const gtsIgnores = [{ignores: require('./eslint.ignores.cjs')}];
 // Reuse gts's own plugin instance when it has one; otherwise fall back to
 // the installed package. Using the same instance avoids "Cannot redefine plugin".
 const tsPlugin =
-  gts.find(c => c.plugins?.['@typescript-eslint'])?.plugins[
+  gts.find((c: Linter.Config) => c.plugins?.['@typescript-eslint'])?.plugins[
     '@typescript-eslint'
   ] ?? require('@typescript-eslint/eslint-plugin');
 
 // Keep gts/preact configs away from CSS files.
 const jsTsFiles = ['**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'];
-const isGlobalIgnore = c =>
+const isGlobalIgnore = (c: Linter.Config) =>
   Object.keys(c)
     .filter(k => k !== 'name')
     .join() === 'ignores';
@@ -34,17 +35,27 @@ const unusedOptions = {
   destructuredArrayIgnorePattern: '^_',
 };
 
+const tsParser =
+  gts.find((c: Linter.Config) => c.languageOptions?.parser)?.languageOptions
+    .parser ?? require('@typescript-eslint/parser');
+
 export default defineConfig([
   ...gtsIgnores,
   ...scoped,
   {
-    files: jsTsFiles,
+    files: ['vite.config.ts'],
     languageOptions: {
-      globals: {...globals.browser, ...globals.node},
       parserOptions: {
-        project: ['./tsconfig.json', './tsconfig.node.json'],
+        project: ['./tsconfig.node.json'],
         tsconfigRootDir: __dirname,
       },
+    },
+  },
+  {
+    files: ['**/*.{cts,mts}'],
+    languageOptions: {
+      parser: tsParser,
+      globals: {...globals.browser, ...globals.node},
     },
   },
   {
