@@ -5,5 +5,5 @@ module.exports = [
   '**/build/**',
   '**/*.log',
   'src/paraglide/**',
-  'eslint.config.cts',
+  'generate-icons.js',
 ];
