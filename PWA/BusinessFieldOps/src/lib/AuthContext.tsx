@@ -10,7 +10,7 @@ import {
 import type {ComponentChildren} from 'preact';
 import type {Session, AuthError} from '@supabase/supabase-js';
 
-import {getProfile} from '@/lib/profiles';
+import {getCachedProfile, getProfile} from '@/lib/profiles';
 import type {UserProfile} from '@/lib/profiles';
 import {supabase} from '@/lib/supabase';
 
@@ -63,23 +63,39 @@ export function AuthProvider({children}: {children: ComponentChildren}) {
 
       if (!mounted || requestId !== profileRequest) return;
 
-      void getProfile(userId)
-        .then(userProfile => {
+      void (async () => {
+        let cachedProfile: UserProfile | null = null;
+
+        try {
+          cachedProfile = await getCachedProfile(userId);
+        } catch (error) {
+          console.warn('Failed to retrieve cached profile:', error);
+        }
+
+        if (!mounted || requestId !== profileRequest) return;
+
+        if (cachedProfile) {
+          setProfile(cachedProfile);
+          setProfileLoading(false);
+        }
+
+        try {
+          const userProfile = await getProfile(userId);
+
           if (mounted && requestId === profileRequest) {
             setProfile(userProfile);
           }
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('Failed to retrieve profile:', error);
-          if (mounted && requestId === profileRequest) {
+          if (mounted && requestId === profileRequest && !cachedProfile) {
             setProfileError(true);
           }
-        })
-        .finally(() => {
+        } finally {
           if (mounted && requestId === profileRequest) {
             setProfileLoading(false);
           }
-        });
+        }
+      })();
     };
 
     const {data: listener} = supabase.auth.onAuthStateChange(
