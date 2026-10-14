@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
   establishment_id UUID NOT NULL REFERENCES public.establishment (id) ON DELETE RESTRICT,
   assigned_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   completed_at TIMESTAMPTZ,
+  description TEXT,
 
   CONSTRAINT chk_tasks_completed_after_assigned
     CHECK (completed_at IS NULL OR completed_at >= assigned_at),
