@@ -5,7 +5,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.5';
+    PostgrestVersion: '14.15';
   };
   public: {
     Tables: {
@@ -91,6 +91,7 @@ export type Database = {
       };
       contacts: {
         Row: {
+          captured_at: string;
           created_at: string;
           email: string | null;
           extra_fields: Json;
@@ -102,6 +103,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          captured_at: string;
           created_at?: string;
           email?: string | null;
           extra_fields?: Json;
@@ -113,6 +115,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          captured_at?: string;
           created_at?: string;
           email?: string | null;
           extra_fields?: Json;
@@ -276,6 +279,7 @@ export type Database = {
       };
       merchant_reports: {
         Row: {
+          captured_at: string;
           client_id: string;
           establishment_id: string;
           id: number;
@@ -286,11 +290,14 @@ export type Database = {
           no_inventory: boolean;
           observations: string | null;
           salesman_name: string;
+          search_text: string | null;
           state_id: number;
           submitted_at: string;
+          task_id: string;
           zone: string;
         };
         Insert: {
+          captured_at: string;
           client_id: string;
           establishment_id: string;
           id?: never;
@@ -301,11 +308,14 @@ export type Database = {
           no_inventory?: boolean;
           observations?: string | null;
           salesman_name: string;
+          search_text?: string | null;
           state_id: number;
           submitted_at?: string;
+          task_id: string;
           zone: string;
         };
         Update: {
+          captured_at?: string;
           client_id?: string;
           establishment_id?: string;
           id?: never;
@@ -316,8 +326,10 @@ export type Database = {
           no_inventory?: boolean;
           observations?: string | null;
           salesman_name?: string;
+          search_text?: string | null;
           state_id?: number;
           submitted_at?: string;
+          task_id?: string;
           zone?: string;
         };
         Relationships: [
@@ -327,6 +339,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'client_states';
             referencedColumns: ['client_id', 'state_id'];
+          },
+          {
+            foreignKeyName: 'fk_merchant_reports_task';
+            columns: ['task_id', 'merchant_id', 'establishment_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['id', 'assigned_to', 'establishment_id'];
           },
           {
             foreignKeyName: 'merchant_reports_client_id_fkey';
@@ -517,6 +536,7 @@ export type Database = {
       };
       promoter_reports: {
         Row: {
+          captured_at: string;
           client_id: string | null;
           establishment_id: string;
           id: number;
@@ -525,11 +545,14 @@ export type Database = {
           longitude: number | null;
           promoter_id: string;
           salesman_name: string;
+          search_text: string | null;
           state_id: number | null;
           submitted_at: string;
+          task_id: string;
           zone: string;
         };
         Insert: {
+          captured_at: string;
           client_id?: string | null;
           establishment_id: string;
           id?: never;
@@ -538,11 +561,14 @@ export type Database = {
           longitude?: number | null;
           promoter_id?: string;
           salesman_name: string;
+          search_text?: string | null;
           state_id?: number | null;
           submitted_at?: string;
+          task_id: string;
           zone: string;
         };
         Update: {
+          captured_at?: string;
           client_id?: string | null;
           establishment_id?: string;
           id?: never;
@@ -551,8 +577,10 @@ export type Database = {
           longitude?: number | null;
           promoter_id?: string;
           salesman_name?: string;
+          search_text?: string | null;
           state_id?: number | null;
           submitted_at?: string;
+          task_id?: string;
           zone?: string;
         };
         Relationships: [
@@ -562,6 +590,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'client_states';
             referencedColumns: ['client_id', 'state_id'];
+          },
+          {
+            foreignKeyName: 'fk_promoter_reports_task';
+            columns: ['task_id', 'promoter_id', 'establishment_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['id', 'assigned_to', 'establishment_id'];
           },
           {
             foreignKeyName: 'promoter_reports_client_id_fkey';
@@ -608,19 +643,74 @@ export type Database = {
         };
         Relationships: [];
       };
+      tasks: {
+        Row: {
+          assigned_at: string;
+          assigned_to: string;
+          completed_at: string | null;
+          establishment_id: string;
+          id: string;
+        };
+        Insert: {
+          assigned_at?: string;
+          assigned_to: string;
+          completed_at?: string | null;
+          establishment_id: string;
+          id?: string;
+        };
+        Update: {
+          assigned_at?: string;
+          assigned_to?: string;
+          completed_at?: string | null;
+          establishment_id?: string;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tasks_assigned_to_fkey';
+            columns: ['assigned_to'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_establishment_id_fkey';
+            columns: ['establishment_id'];
+            isOneToOne: false;
+            referencedRelation: 'establishment';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
-      // [_ in never]: never;
+      reports_feed: {
+        Row: {
+          captured_at: string | null;
+          client_id: string | null;
+          establishment_id: string | null;
+          id: number | null;
+          kind: string | null;
+          salesman_name: string | null;
+          search_text: string | null;
+          state_id: number | null;
+          submitted_at: string | null;
+          zone: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
-      // [_ in never]: never;
+      submit_contact: {Args: {p_contact: Json}; Returns: Json};
+      submit_merchant_report: {Args: {p_report: Json}; Returns: Json};
+      submit_promoter_report: {Args: {p_report: Json}; Returns: Json};
     };
     Enums: {
       legal_identity_type: 'client' | 'establishment';
       user_role: 'merchant' | 'promoter' | 'administrator';
     };
     CompositeTypes: {
-      // [_ in never]: never;
+      [_ in never]: never;
     };
   };
 };
