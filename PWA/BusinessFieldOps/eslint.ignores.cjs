@@ -5,4 +5,5 @@ module.exports = [
   '**/build/**',
   '**/*.log',
   'src/paraglide/**',
+  'eslint.config.cts',
 ];
