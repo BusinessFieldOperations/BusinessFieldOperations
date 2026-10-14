@@ -1,5 +1,5 @@
 ---
-description: Commit conventions and guidelines for Servinova Projects
+description: Commit conventions and guidelines
 applyTo: '\.md$|\.ts$|\.tsx$|\.js$|\.jsx$' # Apply to code and documentation files
 ---
 
@@ -22,14 +22,11 @@ This project follows the [Conventional Commits](https://conventionalcommits.org)
 
 ### Commit Scopes
 
-- `sqlite` - SQLite database changes
 - `tauri` - Tauri framework changes
 - `pwa` - Progressive Web App changes
 - `i18n` - Internationalization changes
 - `db` - Database related changes
-- `backend` - Backend related changes
-- `frontend` - Frontend related changes
-- `docs` - Documentation related changes
+- `docs` - Documentation related changes (includes Readme and ./Docs)
 
 ### Commit Format
 
@@ -45,5 +42,5 @@ This project follows the [Conventional Commits](https://conventionalcommits.org)
 
 - `feat(pwa): add login UI component`
 - `fix(sqlite): resolve database connection issue`
-- `docs(readme): update project structure`
+- `docs(pwa): update project structure`
 - `build(tauri): update dependencies`

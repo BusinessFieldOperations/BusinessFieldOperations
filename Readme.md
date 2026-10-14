@@ -17,8 +17,9 @@ Frontend (Dev)  -> PWA
                    Tauri [Bundler]
                    Material 3 [UI]
                    Paraglide [i18n]
+                   Dexie [IndexedDB, local DB cache]
                    PDF.js [report generation]
-Backend         -> Postgresql [db]
+Backend         -> PostgreSQL [db]
 
 Providers (Dev) -> Netlify (WebApp)
                 -> Supabase
