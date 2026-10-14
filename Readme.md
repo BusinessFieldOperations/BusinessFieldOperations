@@ -62,6 +62,7 @@ Scripts/ (Automation)
 - [ ] Embed location in photos
 - [ ] Better CRM
 - [ ] MainTitle handle text or images
+- [ ] Time/date sync with the server (report capture time)
 
 #### Tabs
 
