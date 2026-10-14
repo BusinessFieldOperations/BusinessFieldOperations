@@ -1,0 +1,32 @@
+.report-tab {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.report-list {
+  flex: 1 1 auto;
+}
+
+.report-empty,
+.report-loading {
+  padding: 1rem;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  text-align: center;
+}
+
+.report-loader {
+  padding: 0.75rem 0 1rem;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.detail span {
+  color: rgb(var(--mdui-color-primary));
+  font-weight: 500;
+}
+
+/* .detail p {
+  margin:0;
+} */
