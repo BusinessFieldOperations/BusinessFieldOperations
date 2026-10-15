@@ -1,0 +1,47 @@
+.task-dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-block: 16px;
+}
+
+.task-dialog__info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-inline: 16px;
+}
+
+.task-dialog__description {
+  margin: 0;
+  font-size: var(--mdui-typescale-body-large-size);
+  line-height: var(--mdui-typescale-body-large-line-height);
+}
+
+.task-dialog__place {
+  margin: 0;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.task-dialog__heading {
+  margin: 0;
+  padding-inline: 16px;
+  font-size: var(--mdui-typescale-title-small-size);
+  line-height: var(--mdui-typescale-title-small-line-height);
+  font-weight: var(--mdui-typescale-title-small-weight);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.task-dialog__message {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.task-dialog__status--failed {
+  color: rgb(var(--mdui-color-error));
+}

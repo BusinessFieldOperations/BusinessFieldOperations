@@ -1,0 +1,23 @@
+.home-tasks {
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: 8px;
+}
+
+.home-tasks__header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+.home-tasks__title {
+  margin: 0;
+  font-size: var(--mdui-typescale-title-medium-size);
+  line-height: var(--mdui-typescale-title-medium-line-height);
+  font-weight: var(--mdui-typescale-title-medium-weight);
+}
