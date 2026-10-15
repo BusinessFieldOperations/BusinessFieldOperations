@@ -7,3 +7,5 @@ export type {
   ListItemCompactDetails,
   ListItemCompactProps,
 } from './ListItemCompact';
+export {PickerList} from './PickerList';
+export type {PickerListProps} from './PickerList';
