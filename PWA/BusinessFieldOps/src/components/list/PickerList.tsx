@@ -42,13 +42,9 @@ export function PickerList<T>({
       {toolbar ? <div class="toolbar">{toolbar}</div> : null}
 
       <ListContainer listLabel={listLabel}>
-        {items === undefined ? (
-          <li class="message">{loadingLabel}</li>
-        ) : null}
+        {items === undefined ? <li class="message">{loadingLabel}</li> : null}
 
-        {items?.length === 0 ? (
-          <li class="message">{emptyLabel}</li>
-        ) : null}
+        {items?.length === 0 ? <li class="message">{emptyLabel}</li> : null}
 
         {items?.map(item => (
           <ListItem
