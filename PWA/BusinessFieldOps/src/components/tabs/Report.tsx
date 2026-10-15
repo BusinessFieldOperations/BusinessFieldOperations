@@ -15,6 +15,7 @@ import {db, REFERENCE_META_KEY, useLiveQuery} from '@/lib/offline';
 import {useInfiniteScroll} from '@/lib/useInfiniteScroll';
 import {useListSearch} from '@/lib/useListSearch';
 import {usePagedList} from '@/lib/usePagedList';
+import {useDialogParam} from '@/lib/useDialogParam';
 
 import './Report.css';
 
@@ -35,6 +36,7 @@ const formatReportDate = (value: string) =>
 const getReportKey = (report: ReportListItem) => `${report.kind}-${report.id}`;
 
 export default function Report() {
+  const pickTask = useDialogParam('pickTask');
   const {profile, profileLoading, profileError} = useAuth();
   const isAdmin = profile?.role === 'administrator';
   const profileId = profile?.id;
@@ -114,6 +116,7 @@ export default function Report() {
         showAdd={!isAdmin}
         showSearch
         addLabel="Add report"
+        onAddClick={() => pickTask.open('1')}
         searchLabel="Search reports"
         onSearchClick={search.toggle}
         className="report-list"
