@@ -10,6 +10,7 @@ import 'mdui/components/navigation-bar-item.js';
 
 import {TABS, TabId} from '@/components/Tabs';
 import MainTitle from '@/components/MainTitle';
+import {TaskDialogs} from '@/components/tasks';
 
 interface Props {
   tabs: readonly TabId[];
@@ -26,33 +27,36 @@ export default function DashboardLayout({tabs}: Props) {
   };
 
   return (
-    <mdui-layout full-height>
-      <mdui-layout-main>
-        <MainTitle />
+    <>
+      <mdui-layout full-height>
+        <mdui-layout-main>
+          <MainTitle />
 
-        <Switch>
-          {tabs.map(id => (
-            <Route key={id} path={`/${id}`} nest>
-              {TABS[id].render()}
+          <Switch>
+            {tabs.map(id => (
+              <Route key={id} path={`/${id}`} nest>
+                {TABS[id].render()}
+              </Route>
+            ))}
+            <Route>
+              <Redirect to={`/${tabs[0]}`} replace />
             </Route>
-          ))}
-          <Route>
-            <Redirect to={`/${tabs[0]}`} replace />
-          </Route>
-        </Switch>
-      </mdui-layout-main>
+          </Switch>
+        </mdui-layout-main>
 
-      <mdui-navigation-bar
-        value={ACTIVE_TAB}
-        onChange={handleNavChange}
-        label-visibility="labeled"
-      >
-        {tabs.map(id => (
-          <mdui-navigation-bar-item key={id} value={id} icon={TABS[id].icon}>
-            {TABS[id].label}
-          </mdui-navigation-bar-item>
-        ))}
-      </mdui-navigation-bar>
-    </mdui-layout>
+        <mdui-navigation-bar
+          value={ACTIVE_TAB}
+          onChange={handleNavChange}
+          label-visibility="labeled"
+        >
+          {tabs.map(id => (
+            <mdui-navigation-bar-item key={id} value={id} icon={TABS[id].icon}>
+              {TABS[id].label}
+            </mdui-navigation-bar-item>
+          ))}
+        </mdui-navigation-bar>
+      </mdui-layout>
+      <TaskDialogs />
+    </>
   );
 }
