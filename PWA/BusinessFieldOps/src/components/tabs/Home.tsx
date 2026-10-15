@@ -7,6 +7,7 @@ import LogoutButton from '@/components/LogoutButton';
 
 import {useAuth} from '@/lib/AuthContext';
 import type {UserRole} from '@/lib/profiles';
+import {HomeTasks} from '@/components/tasks';
 import {m} from '@/paraglide/messages.js';
 import {Fragment} from 'preact/jsx-runtime';
 
@@ -55,7 +56,7 @@ export default function Home() {
       <mdui-divider></mdui-divider>
 
       {/* Admin: Assign, review task*/}
-      {/* Other: Tasks */}
+      <HomeTasks />
     </Fragment>
   );
 }
