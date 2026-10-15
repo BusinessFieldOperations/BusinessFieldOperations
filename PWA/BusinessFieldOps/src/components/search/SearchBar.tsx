@@ -18,6 +18,7 @@ export interface SearchBarProps {
   onChange: (_value: string) => void;
   placeholder?: string;
   label?: string;
+  autoFocus?: boolean;
 }
 
 /**
@@ -31,12 +32,17 @@ export function SearchBar({
   onChange,
   placeholder,
   label,
+  autoFocus = true,
 }: SearchBarProps): JSX.Element {
   const fieldRef = useRef<TextFieldElement | null>(null);
 
   useEffect(() => {
     fieldRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (autoFocus) fieldRef.current?.focus();
+  }, [autoFocus]);
 
   // Native listeners: custom element events are not reliably cased in JSX.
   useEffect(() => {
