@@ -411,7 +411,7 @@ export type Database = {
         Row: {
           brand: string | null;
           category: string | null;
-          client_id: string | null;
+          client_id: string;
           display_quantity: string | null;
           id: string;
           is_active: boolean;
@@ -422,7 +422,7 @@ export type Database = {
         Insert: {
           brand?: string | null;
           category?: string | null;
-          client_id?: string | null;
+          client_id: string;
           display_quantity?: string | null;
           id?: string;
           is_active?: boolean;
@@ -433,7 +433,7 @@ export type Database = {
         Update: {
           brand?: string | null;
           category?: string | null;
-          client_id?: string | null;
+          client_id?: string;
           display_quantity?: string | null;
           id?: string;
           is_active?: boolean;
@@ -648,6 +648,7 @@ export type Database = {
           assigned_at: string;
           assigned_to: string;
           completed_at: string | null;
+          description: string | null;
           establishment_id: string;
           id: string;
         };
@@ -655,6 +656,7 @@ export type Database = {
           assigned_at?: string;
           assigned_to: string;
           completed_at?: string | null;
+          description?: string | null;
           establishment_id: string;
           id?: string;
         };
@@ -662,6 +664,7 @@ export type Database = {
           assigned_at?: string;
           assigned_to?: string;
           completed_at?: string | null;
+          description?: string | null;
           establishment_id?: string;
           id?: string;
         };
