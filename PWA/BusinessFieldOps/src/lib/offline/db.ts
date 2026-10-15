@@ -74,10 +74,18 @@ function toSchema({primaryKey, indexes}: ReferenceTableConfig): string {
 const referenceSchemas = Object.fromEntries(
   REFERENCE_TABLE_NAMES.map(name => [name, toSchema(REFERENCE_TABLES[name])]),
 );
+
+// Clean it (is intended to run in a fresh db no under several patch)
 const versionOneReferenceSchemas = {
   ...referenceSchemas,
   merchant_reports: toSchema({primaryKey: 'id'}),
   promoter_reports: toSchema({primaryKey: 'id'}),
+};
+
+const versionTwoReferenceSchemas = {
+  ...referenceSchemas,
+  merchant_reports: toSchema({primaryKey: 'id', indexes: ['merchant_id']}),
+  promoter_reports: toSchema({primaryKey: 'id', indexes: ['promoter_id']}),
 };
 
 class AppDatabase extends Dexie {
@@ -96,7 +104,13 @@ class AppDatabase extends Dexie {
     });
 
     this.version(2).stores({
-      ...referenceSchemas,
+      ...versionTwoReferenceSchemas,
+      syncMeta: 'key',
+      drafts: 'id, ownerId, [ownerId+kind], [ownerId+kind+refId], updatedAt',
+      outbox: 'id, ownerId, status, [ownerId+status], createdAt',
+    });
+    this.version(3).stores({
+      ...referenceSchemas, // now with task_id
       syncMeta: 'key',
       drafts: 'id, ownerId, [ownerId+kind], [ownerId+kind+refId], updatedAt',
       outbox: 'id, ownerId, status, [ownerId+status], createdAt',
