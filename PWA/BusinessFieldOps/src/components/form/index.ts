@@ -1,2 +1,10 @@
+export {DeletableChip} from './DeletableChip';
+export type {DeletableChipProps} from './DeletableChip';
 export {IntegerField} from './IntegerField';
 export type {IntegerFieldProps} from './IntegerField';
+export {SelectField} from './SelectField';
+export type {SelectFieldProps, SelectOption} from './SelectField';
+export {SwitchField} from './SwitchField';
+export type {SwitchFieldProps} from './SwitchField';
+export {TextField} from './TextField';
+export type {TextFieldProps} from './TextField';
