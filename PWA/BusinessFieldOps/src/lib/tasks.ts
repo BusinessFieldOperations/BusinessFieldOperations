@@ -36,6 +36,7 @@ export interface TaskListItem {
   description: string | null;
   assignedAt: string;
   establishmentId: string;
+  stateId: number | null;
   /** Legal name plus branch, e.g. "Acme - Downtown". */
   establishmentName: string;
   location: string;
@@ -208,6 +209,7 @@ export async function getAvailableTasks(
         description: task.description,
         assignedAt: task.assigned_at,
         establishmentId: task.establishment_id,
+        stateId: establishment?.state_id ?? null,
         establishmentName:
           [
             establishment
