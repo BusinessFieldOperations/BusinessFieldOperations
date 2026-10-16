@@ -1,0 +1,13 @@
+.product-picker__filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-block-end: 8px;
+}
+
+.product-picker__hint {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
