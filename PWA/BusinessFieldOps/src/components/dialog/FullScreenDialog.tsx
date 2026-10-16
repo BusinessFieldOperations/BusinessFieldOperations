@@ -81,15 +81,23 @@ export function FullScreenDialog({
       return;
     }
 
+    // mdui components inside (select menus, dropdowns...) emit their own
+    // `close` and `cancel` events and those BUBBLE up to the dialog. Only
+    // the dialog's own events (target is the dialog) are the user's request.
+
     // Escape: let the owner decide instead of closing behind its back.
     const handleCancel = (event: Event) => {
+      if (event.target !== dialog) {
+        return;
+      }
+
       event.preventDefault();
       onCloseRef.current();
     };
     // Safety net: the browser may still close it (e.g. Escape pressed twice
     // quickly). A close caused by `open` turning false is ignored.
-    const handleClose = () => {
-      if (openRef.current) {
+    const handleClose = (event: Event) => {
+      if (event.target === dialog && openRef.current) {
         onCloseRef.current();
       }
     };
@@ -100,6 +108,18 @@ export function FullScreenDialog({
     return () => {
       dialog.removeEventListener('cancel', handleCancel);
       dialog.removeEventListener('close', handleClose);
+    };
+  }, []);
+
+  // Unmounted while open (the owner stopped rendering it): close it properly
+  // so the browser restores focus and releases the modal state.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+
+    return () => {
+      if (dialog?.open) {
+        dialog.close();
+      }
     };
   }, []);
 
