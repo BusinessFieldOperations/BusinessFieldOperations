@@ -4,6 +4,7 @@ import {useAuth} from '@/lib/AuthContext';
 import {reportKindForRole} from '@/lib/reportKinds';
 import {useAvailableTasks, type TaskListItem} from '@/lib/tasks';
 import {setDialogParams, useDialogParam} from '@/lib/useDialogParam';
+import {ReportDialog} from '@/components/reports';
 
 import {TaskDialog} from './TaskDialog';
 import {TaskPickerDialog} from './TaskPickerDialog';
@@ -21,6 +22,7 @@ export function TaskDialogs(): JSX.Element | null {
   const tasks = useAvailableTasks(profile?.id, profile?.role);
   const pickTask = useDialogParam('pickTask');
   const task = useDialogParam('task');
+  const report = useDialogParam('report');
 
   if (!profile || !reportKindForRole(profile.role)) {
     return null;
@@ -55,6 +57,12 @@ export function TaskDialogs(): JSX.Element | null {
         onClose={task.close}
         onAddReport={handleAddReport}
         onOpenDraft={handleOpenDraft}
+      />
+      <ReportDialog
+        draftId={report.value}
+        taskId={task.value}
+        task={task.value === null ? null : selectedTask}
+        onClose={report.close}
       />
     </>
   );
