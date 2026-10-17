@@ -7,7 +7,8 @@ import type {JSX} from 'preact';
 
 import {FullScreenDialog} from '@/components/dialog';
 import {ListContainer, ListItem} from '@/components/list';
-import type {TaskListItem, TaskReportStatus} from '@/lib/tasks';
+import type {TaskListItem} from '@/lib/tasks';
+import {OutboxItemActions} from '@/components/reports';
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -16,16 +17,6 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 
 const formatDateTime = (value: string | number) =>
   dateFormatter.format(new Date(value));
-
-/** Sent reports need no marker; the others tell the user something. */
-const STATUS_MARKERS: Record<
-  TaskReportStatus,
-  {icon: string; label: string} | null
-> = {
-  sent: null,
-  queued: {icon: 'schedule', label: 'Waiting to be sent'},
-  failed: {icon: 'error', label: 'Could not be sent'},
-};
 
 /** Props of {@link TaskDialog}. */
 export interface TaskDialogProps {
@@ -116,7 +107,6 @@ function TaskDetails({
         ) : (
           <ListContainer listLabel="Reports">
             {task.reports.map(report => {
-              const marker = STATUS_MARKERS[report.status];
 
               return (
                 <ListItem
@@ -127,14 +117,13 @@ function TaskDetails({
                     [report.salesmanName, report.zone]
                       .filter(Boolean)
                       .join(' · '),
-                    formatDateTime(report.capturedAt),
+                    report.errorMessage ?? formatDateTime(report.capturedAt),
                   ]}
                   actions={
-                    marker ? (
-                      <mdui-icon
-                        class={`task-dialog__status task-dialog__status--${report.status}`}
-                        name={marker.icon}
-                        title={marker.label}
+                    report.outboxId && report.status !== 'sent' ? (
+                      <OutboxItemActions
+                        outboxId={report.outboxId}
+                        status={report.status}
                       />
                     ) : null
                   }

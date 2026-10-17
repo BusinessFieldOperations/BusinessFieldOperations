@@ -41,7 +41,3 @@
   text-align: center;
   color: rgb(var(--mdui-color-on-surface-variant));
 }
-
-.task-dialog__status--failed {
-  color: rgb(var(--mdui-color-error));
-}
