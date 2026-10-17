@@ -107,7 +107,6 @@ function TaskDetails({
         ) : (
           <ListContainer listLabel="Reports">
             {task.reports.map(report => {
-
               return (
                 <ListItem
                   key={report.key}

@@ -6,10 +6,7 @@ import {ListContainer, ListItem} from '@/components/list';
 import {SearchBar} from '@/components/search';
 import {useAuth} from '@/lib/AuthContext';
 import type {PageRequest} from '@/lib/pagination';
-import {
-  getCachedReportsPage,
-  type ReportListItem,
-} from '@/lib/reports';
+import {getCachedReportsPage, type ReportListItem} from '@/lib/reports';
 import {OutboxItemActions} from '@/components/reports';
 import {db, listOutbox, REFERENCE_META_KEY, useLiveQuery} from '@/lib/offline';
 import {useInfiniteScroll} from '@/lib/useInfiniteScroll';
