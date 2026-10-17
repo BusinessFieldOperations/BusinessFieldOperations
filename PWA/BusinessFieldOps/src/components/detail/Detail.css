@@ -1,0 +1,90 @@
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-section__title {
+  margin: 0;
+  font-size: var(--mdui-typescale-title-small-size);
+  line-height: var(--mdui-typescale-title-small-line-height);
+  font-weight: var(--mdui-typescale-title-small-weight);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px 16px;
+}
+
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.detail-field__label {
+  font-size: var(--mdui-typescale-label-small-size);
+  line-height: var(--mdui-typescale-label-small-line-height);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.detail-field__value {
+  font-size: var(--mdui-typescale-body-large-size);
+  line-height: var(--mdui-typescale-body-large-line-height);
+  overflow-wrap: anywhere;
+}
+
+.detail-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.detail-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-radius: var(--mdui-shape-corner-small, 8px);
+  background: rgb(var(--mdui-color-surface-container-highest));
+}
+
+.detail-stat__value {
+  font-size: var(--mdui-typescale-title-medium-size);
+  line-height: var(--mdui-typescale-title-medium-line-height);
+  font-weight: var(--mdui-typescale-title-medium-weight);
+}
+
+.detail-stat__label {
+  font-size: var(--mdui-typescale-label-small-size);
+  line-height: var(--mdui-typescale-label-small-line-height);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.detail-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-size: var(--mdui-typescale-label-large-size);
+  line-height: var(--mdui-typescale-label-large-line-height);
+}
+
+.detail-badge--neutral {
+  color: rgb(var(--mdui-color-on-surface-variant));
+  background: rgb(var(--mdui-color-surface-container-highest));
+}
+
+.detail-badge--ok {
+  color: rgb(var(--mdui-color-on-secondary-container));
+  background: rgb(var(--mdui-color-secondary-container));
+}
+
+.detail-badge--error {
+  color: rgb(var(--mdui-color-on-error-container));
+  background: rgb(var(--mdui-color-error-container));
+}
