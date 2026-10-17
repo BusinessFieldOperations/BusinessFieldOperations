@@ -46,3 +46,5 @@ export {useLiveQuery} from './useLiveQuery';
 export {useReferenceSync} from './useReferenceSync';
 export type {ReferenceSync, ReferenceSyncStatus} from './useReferenceSync';
 export {useReferenceTable} from './useReferenceTable';
+export {describeDeliveryError, isFinalError} from './deliveryErrors';
+export {useOutboxSync} from './useOutboxSync';
