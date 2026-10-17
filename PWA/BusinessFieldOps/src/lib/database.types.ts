@@ -93,6 +93,7 @@ export type Database = {
         Row: {
           captured_at: string;
           created_at: string;
+          created_by: string;
           email: string | null;
           extra_fields: Json;
           first_name: string;
@@ -105,6 +106,7 @@ export type Database = {
         Insert: {
           captured_at: string;
           created_at?: string;
+          created_by?: string;
           email?: string | null;
           extra_fields?: Json;
           first_name: string;
@@ -117,6 +119,7 @@ export type Database = {
         Update: {
           captured_at?: string;
           created_at?: string;
+          created_by?: string;
           email?: string | null;
           extra_fields?: Json;
           first_name?: string;
@@ -127,6 +130,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'contacts_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'contacts_owner_id_fkey';
             columns: ['owner_id'];
@@ -704,9 +714,14 @@ export type Database = {
       };
     };
     Functions: {
+      assign_contact: {
+        Args: {p_contact: Json; p_owner_ids: string[]};
+        Returns: Json;
+      };
       submit_contact: {Args: {p_contact: Json}; Returns: Json};
       submit_merchant_report: {Args: {p_report: Json}; Returns: Json};
       submit_promoter_report: {Args: {p_report: Json}; Returns: Json};
+      update_contact: {Args: {p_contact: Json}; Returns: Json};
     };
     Enums: {
       legal_identity_type: 'client' | 'establishment';
