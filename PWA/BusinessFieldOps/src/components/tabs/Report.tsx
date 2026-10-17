@@ -8,10 +8,11 @@ import {useAuth} from '@/lib/AuthContext';
 import type {PageRequest} from '@/lib/pagination';
 import {
   getCachedReportsPage,
-  type ReportKind,
+  // type ReportKind,
   type ReportListItem,
 } from '@/lib/reports';
-import {db, REFERENCE_META_KEY, useLiveQuery} from '@/lib/offline';
+import {OutboxItemActions} from '@/components/reports';
+import {db, listOutbox, REFERENCE_META_KEY, useLiveQuery} from '@/lib/offline';
 import {useInfiniteScroll} from '@/lib/useInfiniteScroll';
 import {useListSearch} from '@/lib/useListSearch';
 import {usePagedList} from '@/lib/usePagedList';
@@ -19,10 +20,10 @@ import {useDialogParam} from '@/lib/useDialogParam';
 
 import './Report.css';
 
-const KIND_LABELS: Record<ReportKind, string> = {
-  merchant: 'Merchant',
-  promoter: 'Promoter',
-};
+// const KIND_LABELS: Record<ReportKind, string> = {
+//   merchant: 'Merchant',
+//   promoter: 'Promoter',
+// };
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -33,7 +34,7 @@ const formatReportDate = (value: string) =>
   dateFormatter.format(new Date(value));
 
 /** `ids` repeat across both tables, so the kind is part of the key. */
-const getReportKey = (report: ReportListItem) => `${report.kind}-${report.id}`;
+// const getReportKey = (report: ReportListItem) => `${report.kind}-${report.id}`;
 
 export default function Report() {
   const pickTask = useDialogParam('pickTask');
@@ -47,6 +48,16 @@ export default function Report() {
     [],
     null,
   );
+  const outboxSignature = useLiveQuery(
+    async () =>
+      profileId
+        ? (await listOutbox(profileId))
+            .map(item => `${item.id}:${item.status}`)
+            .join('|')
+        : '',
+    [profileId],
+    '',
+  );
 
   const fetchReports = useCallback(
     (request: PageRequest) =>
@@ -59,8 +70,13 @@ export default function Report() {
           })
         : Promise.resolve({items: [], hasMore: false}),
     // Refresh when the cached tables finish syncing or another user signs in.
-    [search.term, profileId, profileRole, lastSyncedAt],
+    [search.term, profileId, profileRole, lastSyncedAt, outboxSignature],
   );
+
+  const getReportKey = (report: ReportListItem) =>
+    report.outboxId
+      ? `outbox-${report.outboxId}`
+      : `${report.kind}-${report.id}`;
 
   const {
     items: reports,
@@ -140,12 +156,18 @@ export default function Report() {
             headline={report.salesman_name}
             details={[
               report.zone,
-              <>
-                {isAdmin ? <span>{KIND_LABELS[report.kind]}</span> : null}
-                {isAdmin ? ' · ' : null}
-                {formatReportDate(report.submitted_at)}
-              </>,
+              report.errorMessage ??
+                (report.status === 'queued' ? 'Waiting to be sent · ' : '') +
+                  formatReportDate(report.submitted_at),
             ]}
+            actions={
+              report.outboxId !== null && report.status !== 'sent' ? (
+                <OutboxItemActions
+                  outboxId={report.outboxId}
+                  status={report.status}
+                />
+              ) : null
+            }
             itemAction={() => handleOpenReport(report)}
           />
         ))}
