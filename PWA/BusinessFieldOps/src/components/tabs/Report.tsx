@@ -79,10 +79,11 @@ export default function Report() {
 
   const sentinelRef = useInfiniteScroll(loadMore, hasMore && status === 'idle');
 
-  const handleOpenReport = useCallback((report: ReportListItem) => {
-    // TODO: open the report detail.
-    console.log('Report item placeholder clicked:', report);
-  }, []);
+  // const handleOpenReport = useCallback((report: ReportListItem) => {
+  //   // TODO: open the report detail.
+  //   console.log('Report item placeholder clicked:', report);
+  // }, []);
+  const view = useDialogParam('view');
 
   if (profileLoading) {
     return (
@@ -156,7 +157,7 @@ export default function Report() {
                 />
               ) : null
             }
-            itemAction={() => handleOpenReport(report)}
+            itemAction={() => view.open(getReportKey(report))}
           />
         ))}
       </ListContainer>

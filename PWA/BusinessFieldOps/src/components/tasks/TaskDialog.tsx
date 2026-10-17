@@ -9,6 +9,7 @@ import {FullScreenDialog} from '@/components/dialog';
 import {ListContainer, ListItem} from '@/components/list';
 import type {TaskListItem} from '@/lib/tasks';
 import {OutboxItemActions} from '@/components/reports';
+import {setDialogParams} from '@/lib/useDialogParam';
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -110,6 +111,7 @@ function TaskDetails({
               return (
                 <ListItem
                   key={report.key}
+                  itemAction={() => setDialogParams({view: report.viewKey})}
                   icon={<mdui-icon name="assignment" />}
                   headline={report.clientName || 'Report'}
                   details={[
