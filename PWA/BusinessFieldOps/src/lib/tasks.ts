@@ -10,6 +10,7 @@ import {
 import type {UserRole} from '@/lib/profiles';
 import {OFFLINE_KIND, reportKindForRole} from '@/lib/reportKinds';
 import type {ReportKind} from '@/lib/reports';
+import {describeDeliveryError} from '@/lib/offline/deliveryErrors';
 
 /**
  * - `sent`: the server has it.
@@ -28,6 +29,8 @@ export interface TaskReportEntry {
   zone: string;
   clientId: string | null;
   clientName: string;
+  outboxId: string | null;
+  errorMessage: string | null;
 }
 
 /** An open task of the signed-in user, ready to display. */
@@ -100,6 +103,8 @@ export async function getTaskReports(
       zone: row.zone,
       clientId: row.client_id,
       clientName: nameOf(row.client_id),
+      outboxId: null,
+      errorMessage: null,
     });
   }
 
@@ -128,6 +133,9 @@ export async function getTaskReports(
       zone: String(item.payload.zone ?? ''),
       clientId,
       clientName: nameOf(clientId),
+      outboxId: item.id,
+      errorMessage:
+        item.status === 'failed' ? describeDeliveryError(item.lastError) : null,
     });
   }
 
