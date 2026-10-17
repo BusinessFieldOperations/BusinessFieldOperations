@@ -44,12 +44,12 @@ export const REFERENCE_TABLES = {
   },
   tasks: {primaryKey: 'id', indexes: ['assigned_to', 'establishment_id']},
   merchant_reports: {primaryKey: 'id', indexes: ['merchant_id', 'task_id']},
-  merchant_report_salesfloors: {primaryKey: 'id'},
-  merchant_report_inventory: {primaryKey: 'id'},
+  merchant_report_salesfloors: {primaryKey: 'id', indexes: ['report_id']},
+  merchant_report_inventory: {primaryKey: 'id', indexes: ['report_id']},
   promoter_reports: {primaryKey: 'id', indexes: ['promoter_id', 'task_id']},
   promoter_report_details: {
     primaryKey: '[report_id+product_id]',
-    indexes: ['product_id'],
+    indexes: ['product_id', 'report_id'],
   },
   contacts: {primaryKey: 'id'},
 } as const satisfies Partial<Record<keyof PublicTables, ReferenceTableConfig>>;
@@ -88,6 +88,15 @@ const versionTwoReferenceSchemas = {
   promoter_reports: toSchema({primaryKey: 'id', indexes: ['promoter_id']}),
 };
 
+const beforeVersionFour = {
+  merchant_report_salesfloors: toSchema({primaryKey: 'id'}),
+  merchant_report_inventory: toSchema({primaryKey: 'id'}),
+  promoter_report_details: toSchema({
+    primaryKey: '[report_id+product_id]',
+    indexes: ['product_id'],
+  }),
+};
+
 class AppDatabase extends Dexie {
   syncMeta!: Table<SyncMeta, string>;
   drafts!: Table<Draft, string>;
@@ -98,6 +107,7 @@ class AppDatabase extends Dexie {
 
     this.version(1).stores({
       ...versionOneReferenceSchemas,
+      ...beforeVersionFour,
       syncMeta: 'key',
       drafts: 'id, ownerId, [ownerId+kind], [ownerId+kind+refId], updatedAt',
       outbox: 'id, ownerId, status, [ownerId+status], createdAt',
@@ -105,12 +115,20 @@ class AppDatabase extends Dexie {
 
     this.version(2).stores({
       ...versionTwoReferenceSchemas,
+      ...beforeVersionFour,
       syncMeta: 'key',
       drafts: 'id, ownerId, [ownerId+kind], [ownerId+kind+refId], updatedAt',
       outbox: 'id, ownerId, status, [ownerId+status], createdAt',
     });
     this.version(3).stores({
-      ...referenceSchemas, // now with task_id
+      ...referenceSchemas,
+      ...beforeVersionFour, // now with task_id
+      syncMeta: 'key',
+      drafts: 'id, ownerId, [ownerId+kind], [ownerId+kind+refId], updatedAt',
+      outbox: 'id, ownerId, status, [ownerId+status], createdAt',
+    });
+    this.version(4).stores({
+      ...referenceSchemas, // now with report_id on the child tables
       syncMeta: 'key',
       drafts: 'id, ownerId, [ownerId+kind], [ownerId+kind+refId], updatedAt',
       outbox: 'id, ownerId, status, [ownerId+status], createdAt',

@@ -11,6 +11,7 @@ import type {UserRole} from '@/lib/profiles';
 import {OFFLINE_KIND, reportKindForRole} from '@/lib/reportKinds';
 import type {ReportKind} from '@/lib/reports';
 import {describeDeliveryError} from '@/lib/offline/deliveryErrors';
+import {outboxReportViewKey, sentReportViewKey} from '@/lib/reportView';
 
 /**
  * - `sent`: the server has it.
@@ -31,6 +32,7 @@ export interface TaskReportEntry {
   clientName: string;
   outboxId: string | null;
   errorMessage: string | null;
+  viewKey: string;
 }
 
 /** An open task of the signed-in user, ready to display. */
@@ -105,6 +107,7 @@ export async function getTaskReports(
       clientName: nameOf(row.client_id),
       outboxId: null,
       errorMessage: null,
+      viewKey: sentReportViewKey(kind, row.id),
     });
   }
 
@@ -136,6 +139,7 @@ export async function getTaskReports(
       outboxId: item.id,
       errorMessage:
         item.status === 'failed' ? describeDeliveryError(item.lastError) : null,
+      viewKey: outboxReportViewKey(item.id),
     });
   }
 
