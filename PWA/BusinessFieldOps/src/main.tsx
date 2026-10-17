@@ -5,7 +5,11 @@ import {setColorScheme} from 'mdui/functions/setColorScheme.js';
 import {useEffect} from 'preact/hooks';
 
 import {AuthProvider, useAuth} from '@/lib/AuthContext';
-import {requestPersistentStorage, useReferenceSync} from '@/lib/offline';
+import {
+  requestPersistentStorage,
+  useOutboxSync,
+  useReferenceSync,
+} from '@/lib/offline';
 
 import './Global.css';
 
@@ -18,6 +22,7 @@ function OfflineSync() {
   const {profile} = useAuth();
 
   useReferenceSync(profile?.id);
+  useOutboxSync(profile?.is_active ? profile.id : undefined);
 
   useEffect(() => {
     if (profile?.id) {

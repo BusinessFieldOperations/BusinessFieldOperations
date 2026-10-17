@@ -8,7 +8,6 @@ import {useAuth} from '@/lib/AuthContext';
 import type {PageRequest} from '@/lib/pagination';
 import {
   getCachedReportsPage,
-  // type ReportKind,
   type ReportListItem,
 } from '@/lib/reports';
 import {OutboxItemActions} from '@/components/reports';
@@ -20,11 +19,6 @@ import {useDialogParam} from '@/lib/useDialogParam';
 
 import './Report.css';
 
-// const KIND_LABELS: Record<ReportKind, string> = {
-//   merchant: 'Merchant',
-//   promoter: 'Promoter',
-// };
-
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
   timeStyle: 'short',
@@ -32,9 +26,6 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 
 const formatReportDate = (value: string) =>
   dateFormatter.format(new Date(value));
-
-/** `ids` repeat across both tables, so the kind is part of the key. */
-// const getReportKey = (report: ReportListItem) => `${report.kind}-${report.id}`;
 
 export default function Report() {
   const pickTask = useDialogParam('pickTask');
