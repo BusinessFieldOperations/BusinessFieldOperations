@@ -9,6 +9,11 @@
 [context.branch-deploy]
   command = "corepack prepare pnpm@12.11.2 --activate && pnpm --dir PWA/BusinessFieldOps install --frozen-lockfile && pnpm --dir PWA/BusinessFieldOps run prepare && pnpm --dir PWA/BusinessFieldOps run build"
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet, noimageindex"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

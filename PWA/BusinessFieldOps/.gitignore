@@ -31,5 +31,6 @@ coverage/
 
 # CI/CD
 
-public/
+public/*
+!public/robots.txt
 src-tauri/icons/
