@@ -1,5 +1,9 @@
-/** Kinds of records the user can create while offline. */
-export type OfflineKind = 'merchant_report' | 'promoter_report' | 'contact';
+/**
+ * Kinds of records the user can create or change while offline.
+ * `contact_update` is the edit of a contact that already exists on the server.
+ */
+export type OfflineKind =
+  'merchant_report' | 'promoter_report' | 'contact' | 'contact_update';
 
 /** A work-in-progress form, saved locally until the user presses Send. */
 export interface Draft<T = unknown> {

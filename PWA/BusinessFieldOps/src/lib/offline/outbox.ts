@@ -66,6 +66,128 @@ export async function enqueue({
   });
 }
 
+/** The edit cannot be queued while the contact is being sent: try again. */
+export class ContactSendingError extends Error {
+  constructor() {
+    super('contact_sending');
+    this.name = 'ContactSendingError';
+  }
+}
+
+/** Input of {@link queueContactUpdate}. */
+export interface QueueContactUpdateInput {
+  /** Profile id of the signed-in user (the contact's owner). */
+  ownerId: string;
+  /**
+   * `captured_at` of the contact being edited, as the server or the outbox
+   * has it. It identifies the contact: a contact created offline has no
+   * server id yet.
+   */
+  contactCapturedAt: string;
+  /** ALL the editable fields, in the shape `update_contact` expects. */
+  fields: Record<string, unknown>;
+}
+
+const outboxTargetsContact = (item: OutboxItem, targetMs: number): boolean => {
+  if (item.kind === 'contact') {
+    return Date.parse(item.capturedAt) === targetMs;
+  }
+
+  return (
+    item.kind === 'contact_update' &&
+    Date.parse(String(item.payload.contact_captured_at)) === targetMs
+  );
+};
+
+/**
+ * Queues the edit of one of the user's own contacts, in ONE transaction.
+ *
+ * - The contact is still waiting to be created (`pending` or `failed`): the
+ *   edit goes into that item, so the server only ever sees the final values
+ *   and an edit can never reach the server before its contact does. A failed
+ *   item goes back to pending: the user has just changed it.
+ * - The contact already has a waiting edit: its fields are replaced, so many
+ *   edits become one `update_contact` call.
+ * - Otherwise a new `contact_update` item is added.
+ *
+ * Throws {@link ContactSendingError} if an item of that contact is being sent
+ * right now (a few seconds at most): a retry of the item in flight could
+ * overwrite a newer edit, so the caller shows "try again in a moment".
+ */
+export async function queueContactUpdate({
+  ownerId,
+  contactCapturedAt,
+  fields,
+}: QueueContactUpdateInput): Promise<OutboxItem> {
+  return db.transaction('rw', db.outbox, async () => {
+    const targetMs = Date.parse(contactCapturedAt);
+    const related = (await db.outbox.where('ownerId').equals(ownerId).toArray())
+      .filter(item => outboxTargetsContact(item, targetMs))
+      .sort((first, second) => first.createdAt - second.createdAt);
+
+    if (related.some(item => item.status === 'sending')) {
+      throw new ContactSendingError();
+    }
+
+    const now = Date.now();
+    const waiting =
+      related.find(item => item.kind === 'contact') ??
+      related.find(item => item.kind === 'contact_update');
+
+    if (waiting) {
+      const merged: OutboxItem = {
+        ...waiting,
+        payload: {...waiting.payload, ...fields},
+        status: 'pending',
+        lastError: null,
+        updatedAt: now,
+        nextAttemptAt: now,
+      };
+      await db.outbox.put(merged);
+
+      return merged;
+    }
+
+    const item: OutboxItem = {
+      id: crypto.randomUUID(),
+      kind: 'contact_update',
+      ownerId,
+      capturedAt: new Date(now).toISOString(),
+      payload: {...fields, contact_captured_at: contactCapturedAt},
+      status: 'pending',
+      attempts: 0,
+      lastError: null,
+      createdAt: now,
+      updatedAt: now,
+      nextAttemptAt: now,
+    };
+    await db.outbox.add(item);
+
+    return item;
+  });
+}
+
+/**
+ * Drops what is still waiting to be sent for a contact that was deleted, so
+ * no item is left behind that could only fail.
+ */
+export async function discardContactItems(
+  ownerId: string,
+  contactCapturedAt: string,
+): Promise<void> {
+  const targetMs = Date.parse(contactCapturedAt);
+
+  await db.transaction('rw', db.outbox, async () => {
+    const items = await db.outbox.where('ownerId').equals(ownerId).toArray();
+
+    for (const item of items) {
+      if (outboxTargetsContact(item, targetMs)) {
+        await db.outbox.delete(item.id);
+      }
+    }
+  });
+}
+
 /** All outbox items of a user, oldest first (for the "pending" screen). */
 export async function listOutbox(ownerId: string): Promise<OutboxItem[]> {
   return db.outbox.where('ownerId').equals(ownerId).sortBy('createdAt');

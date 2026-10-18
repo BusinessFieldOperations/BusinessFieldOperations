@@ -25,6 +25,8 @@ const SUBMITTERS: Record<OfflineKind, Submitter> = {
   promoter_report: payload =>
     supabase.rpc('submit_promoter_report', {p_report: payload}),
   contact: payload => supabase.rpc('submit_contact', {p_contact: payload}),
+  contact_update: payload =>
+    supabase.rpc('update_contact', {p_contact: payload}),
 };
 
 const LOCK_NAME = 'business-field-ops-outbox';
@@ -46,8 +48,57 @@ async function withLock(task: () => Promise<void>): Promise<boolean> {
   });
 }
 
-/** Whether the report of an outbox item came back in the local data. */
+const sameOrNull = (first: unknown, second: unknown) =>
+  (first ?? null) === (second ?? null);
+
+/**
+ * Whether the contact of an outbox item came back in the local data: for a
+ * new contact, that it exists; for an edit, that the local copy has the
+ * edited values.
+ */
+async function isContactCached(item: OutboxItem): Promise<boolean> {
+  const target =
+    item.kind === 'contact'
+      ? item.capturedAt
+      : item.payload.contact_captured_at;
+
+  if (typeof target !== 'string') {
+    return true;
+  }
+
+  const targetMs = Date.parse(target);
+  const rows = await db
+    .reference('contacts')
+    .where('owner_id')
+    .equals(item.ownerId)
+    .toArray();
+  const row = rows.find(
+    contact => Date.parse(contact.captured_at) === targetMs,
+  );
+
+  if (!row) {
+    return false;
+  }
+
+  if (item.kind === 'contact') {
+    return true;
+  }
+
+  // extra_fields is not compared: jsonb does not keep the order of the keys.
+  return (
+    row.first_name === item.payload.first_name &&
+    row.last_name === item.payload.last_name &&
+    sameOrNull(row.id_document, item.payload.id_document) &&
+    sameOrNull(row.email, item.payload.email)
+  );
+}
+
+/** Whether the server's copy of the record of an item is in the local data. */
 async function isCached(item: OutboxItem): Promise<boolean> {
+  if (item.kind === 'contact' || item.kind === 'contact_update') {
+    return isContactCached(item);
+  }
+
   const taskId = item.payload.task_id;
 
   if (

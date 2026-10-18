@@ -51,7 +51,7 @@ export const REFERENCE_TABLES = {
     primaryKey: '[report_id+product_id]',
     indexes: ['product_id', 'report_id'],
   },
-  contacts: {primaryKey: 'id'},
+  contacts: {primaryKey: 'id', indexes: ['owner_id']},
 } as const satisfies Partial<Record<keyof PublicTables, ReferenceTableConfig>>;
 
 export type ReferenceTableName = keyof typeof REFERENCE_TABLES;

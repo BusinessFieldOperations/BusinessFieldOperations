@@ -1,10 +1,13 @@
-import type {OutboxError} from './types';
+import {m} from '@/paraglide/messages.js';
+
+import type {OfflineKind, OutboxError} from './types';
 
 /**
  * Whether the server refused a record for good, so sending it again cannot
- * work. Mirrors the list in the header of `04_reports_functions.sql`:
- * `P0001` (task_unavailable, unknown_salesfloor), `22xxx` and `23xxx`
- * (invalid or conflicting data) and `42501` (not allowed).
+ * work. Mirrors the lists in the headers of `04_reports_functions.sql` and
+ * `05_contacts_functions.sql`: `P0001` (task_unavailable, unknown_salesfloor,
+ * contact_not_found, contact_not_editable...), `22xxx` and `23xxx` (invalid or
+ * conflicting data) and `42501` (not allowed).
  *
  * Anything else is temporary: no connection (empty code), 5xx, an expired
  * session...
@@ -22,25 +25,43 @@ export function isFinalError(code: string | null | undefined): boolean {
   );
 }
 
-/** Messages the `submit_*` functions raise on purpose. */
-const KNOWN_MESSAGES: Record<string, string> = {
-  task_unavailable: 'The task was closed or reassigned.',
-  unknown_salesfloor: 'The inventory points to a salesfloor that is missing.',
+/** Messages the `submit_*` / `update_contact` functions raise on purpose. */
+const KNOWN_MESSAGES: Record<string, () => string> = {
+  task_unavailable: () => m.delivery_task_unavailable(),
+  unknown_salesfloor: () => m.delivery_unknown_salesfloor(),
+  contact_not_found: () => m.delivery_contact_not_found(),
+  contact_not_editable: () => m.delivery_contact_not_editable(),
 };
 
-/** Why a record was refused, in words for the user. */
-export function describeDeliveryError(error: OutboxError | null): string {
-  if (error && KNOWN_MESSAGES[error.message]) {
-    return KNOWN_MESSAGES[error.message];
+/** Whether the record is a contact (the message names the right thing). */
+const isContact = (kind: OfflineKind | undefined) =>
+  kind === 'contact' || kind === 'contact_update';
+
+/**
+ * Why a record was refused, in words for the user. Pass the `kind` of the
+ * outbox item so the message names the right thing (report or contact).
+ */
+export function describeDeliveryError(
+  error: OutboxError | null,
+  kind?: OfflineKind,
+): string {
+  const known = error ? KNOWN_MESSAGES[error.message] : undefined;
+
+  if (known) {
+    return known();
   }
 
+  const contact = isContact(kind);
+
   if (error?.code === '42501') {
-    return 'You are not allowed to send this report.';
+    return contact
+      ? m.delivery_contact_not_allowed()
+      : m.delivery_report_not_allowed();
   }
 
   if (error?.code?.startsWith('22') || error?.code?.startsWith('23')) {
-    return 'The report has invalid data.';
+    return contact ? m.delivery_contact_invalid() : m.delivery_report_invalid();
   }
 
-  return 'The server refused this report.';
+  return contact ? m.delivery_contact_refused() : m.delivery_report_refused();
 }

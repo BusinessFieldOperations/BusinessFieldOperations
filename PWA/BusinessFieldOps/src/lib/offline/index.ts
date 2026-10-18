@@ -16,17 +16,19 @@ export type {SaveDraftInput} from './drafts';
 export {
   claim,
   complete,
+  ContactSendingError,
   discard,
   enqueue,
   getNextPending,
   listOutbox,
   markFailed,
+  queueContactUpdate,
   recoverInterrupted,
   release,
   retryDelayMs,
   retryFailed,
 } from './outbox';
-export type {EnqueueInput} from './outbox';
+export type {EnqueueInput, QueueContactUpdateInput} from './outbox';
 export {
   clearReferenceData,
   resetReferenceDataIfOtherUser,
