@@ -5,6 +5,7 @@ import type {JSX} from 'preact';
 import {useState} from 'preact/hooks';
 
 import {discard, retryFailed} from '@/lib/offline/outbox';
+import {m} from '@/paraglide/messages.js';
 
 /** Props of {@link OutboxItemActions}. */
 export interface OutboxItemActionsProps {
@@ -24,7 +25,7 @@ export function OutboxItemActions({
   const [confirming, setConfirming] = useState(false);
 
   if (status === 'queued') {
-    return <mdui-icon name="schedule" title="Waiting to be sent" />;
+    return <mdui-icon name="schedule" title={m.status_queued()} />;
   }
 
   if (confirming) {
@@ -32,12 +33,12 @@ export function OutboxItemActions({
       <>
         <mdui-button-icon
           icon="close"
-          aria-label="Keep the report"
+          aria-label={m.keep_report()}
           onClick={() => setConfirming(false)}
         />
         <mdui-button-icon
           icon="delete_forever"
-          aria-label="Discard the report"
+          aria-label={m.discard_report()}
           onClick={() => void discard(outboxId)}
         />
       </>
@@ -48,12 +49,12 @@ export function OutboxItemActions({
     <>
       <mdui-button-icon
         icon="refresh"
-        aria-label="Try again"
+        aria-label={m.try_again()}
         onClick={() => void retryFailed(outboxId)}
       />
       <mdui-button-icon
         icon="delete"
-        aria-label="Discard the report"
+        aria-label={m.discard_report()}
         onClick={() => setConfirming(true)}
       />
     </>

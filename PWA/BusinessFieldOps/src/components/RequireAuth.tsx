@@ -5,6 +5,7 @@ import type {ComponentChildren} from 'preact';
 import 'mdui/components/button.js';
 
 import {useAuth} from '@/lib/AuthContext';
+import {m} from '@/paraglide/messages.js';
 
 export function RequireAuth({children}: {children: ComponentChildren}) {
   const {session, loading, profile, profileLoading, profileError, signOut} =
@@ -21,7 +22,7 @@ export function RequireAuth({children}: {children: ComponentChildren}) {
   if (loading || (session && profileLoading)) {
     return (
       <main class="center-container">
-        <h1 class="main-title">Loading...</h1>
+        <h1 class="main-title">{m.loading()}</h1>
       </main>
     );
   }
@@ -29,18 +30,16 @@ export function RequireAuth({children}: {children: ComponentChildren}) {
 
   if (profileError || !profile || !profile.is_active) {
     const message = profileError
-      ? 'Your profile could not be loaded.'
+      ? m.profile_load_error()
       : !profile
-        ? 'No profile is associated with this account.'
-        : 'This account is inactive.';
+        ? m.profile_not_linked()
+        : m.account_inactive();
 
     return (
       <main class="center-container">
-        <h1 class="main-title">Access unavailable</h1>
+        <h1 class="main-title">{m.access_unavailable()}</h1>
         <p>{message}</p>
-        {signOutError && (
-          <p role="alert">Could not sign out. Please try again.</p>
-        )}
+        {signOutError && <p role="alert">{m.sign_out_error()}</p>}
         <mdui-button
           variant="filled"
           icon="logout"
@@ -49,7 +48,7 @@ export function RequireAuth({children}: {children: ComponentChildren}) {
             setSignOutError(Boolean(error));
           }}
         >
-          Sign out
+          {m.signout()}
         </mdui-button>
       </main>
     );

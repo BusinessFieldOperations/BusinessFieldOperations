@@ -36,6 +36,7 @@ import {
   validateMerchantReport,
 } from '@/lib/reportPayloads';
 import {useDialogParam} from '@/lib/useDialogParam';
+import {m} from '@/paraglide/messages.js';
 
 import {ProductPickerDialog} from './ProductPickerDialog';
 import {ReportFrame, type ReportDialogProps} from './ReportFrame';
@@ -54,17 +55,17 @@ function CountRow({
   return (
     <div class="report-form__row">
       <IntegerField
-        label="Good"
+        label={m.product_good()}
         value={cell.good}
         onChange={good => onChange({good})}
       />
       <IntegerField
-        label="Damaged"
+        label={m.product_damaged()}
         value={cell.damaged}
         onChange={damaged => onChange({damaged})}
       />
       <IntegerField
-        label="Expired"
+        label={m.product_expired()}
         value={cell.expired}
         onChange={expired => onChange({expired})}
       />
@@ -167,7 +168,7 @@ export function MerchantReportDialog({
             />
 
             <section class="report-form__section">
-              <h3 class="report-form__heading">Salesfloors (optional)</h3>
+              <h3 class="report-form__heading">{m.salesfloors_optional()}</h3>
               {value.salesfloors.length > 0 ? (
                 <div class="report-form__chips">
                   {value.salesfloors.map(floor => (
@@ -183,19 +184,19 @@ export function MerchantReportDialog({
               ) : null}
               <div class="report-form__add">
                 <TextField
-                  label="Add salesfloor"
+                  label={m.add_salesfloor()}
                   value={floorInput}
                   onChange={setFloorInput}
                   onEnter={handleAddFloor}
                 />
                 <mdui-button variant="tonal" onClick={handleAddFloor}>
-                  Add
+                  {m.add()}
                 </mdui-button>
               </div>
             </section>
 
             <SwitchField
-              label="No inventory"
+              label={m.no_inventory()}
               checked={value.noInventory}
               onChange={noInventory =>
                 setValue(previous => ({...previous, noInventory}))
@@ -204,7 +205,7 @@ export function MerchantReportDialog({
 
             {value.noInventory ? null : (
               <section class="report-form__section">
-                <h3 class="report-form__heading">Inventory</h3>
+                <h3 class="report-form__heading">{m.inventory()}</h3>
                 {value.productIds.map(productId => (
                   <ReportLineCard
                     key={productId}
@@ -238,13 +239,13 @@ export function MerchantReportDialog({
                   disabled={clientId === null}
                   onClick={() => pickProduct.open('1')}
                 >
-                  Add products
+                  {m.add_products()}
                 </mdui-button>
               </section>
             )}
 
             <TextField
-              label="Observations"
+              label={m.observations()}
               value={value.observations}
               rows={3}
               onChange={observations =>

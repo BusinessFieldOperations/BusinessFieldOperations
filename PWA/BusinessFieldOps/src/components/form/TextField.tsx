@@ -18,6 +18,8 @@ export interface TextFieldProps {
   rows?: number;
   maxLength?: number;
   autocomplete?: string;
+  /** Native input type; `email` gives the right keyboard and validation. */
+  type?: 'text' | 'email' | 'tel';
   /** Called on Enter (which then does not submit the surrounding form). */
   onEnter?: () => void;
   className?: string;
@@ -34,6 +36,7 @@ export function TextField({
   rows,
   maxLength,
   autocomplete,
+  type,
   onEnter,
   className,
 }: TextFieldProps): JSX.Element {
@@ -41,6 +44,7 @@ export function TextField({
     <mdui-text-field
       class={joinClasses('form-field', className)}
       variant="outlined"
+      type={type}
       label={label}
       helper={helper}
       required={required}

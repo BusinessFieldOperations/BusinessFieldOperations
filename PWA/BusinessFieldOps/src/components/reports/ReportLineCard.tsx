@@ -4,6 +4,7 @@ import 'mdui/components/card.js';
 import type {ComponentChildren, JSX} from 'preact';
 
 import type {CatalogProduct} from '@/lib/catalog';
+import {m} from '@/paraglide/messages.js';
 
 /** "500 ml · SKU 123 · Brand": what tells similar products apart. */
 export function productMeta(product: CatalogProduct): string {
@@ -38,13 +39,13 @@ export function ReportLineCard({
       <div class="report-line__header">
         <div class="report-line__title">
           <span class="report-line__name">
-            {product?.name ?? 'Unknown product'}
+            {product?.name ?? m.unknown_product()}
           </span>
           {meta ? <span class="report-line__meta">{meta}</span> : null}
         </div>
         <mdui-button-icon
           icon="delete"
-          aria-label="Remove product"
+          aria-label={m.remove_product()}
           onClick={() => onRemove()}
         />
       </div>

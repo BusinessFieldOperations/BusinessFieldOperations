@@ -1,3 +1,5 @@
+import {m} from '@/paraglide/messages.js';
+
 export default function Users() {
-  return <p>Users</p>;
+  return <p>{m.users()}</p>;
 }

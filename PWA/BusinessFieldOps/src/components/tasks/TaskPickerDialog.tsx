@@ -4,6 +4,7 @@ import {FullScreenDialog} from '@/components/dialog';
 import {SearchBar} from '@/components/search';
 import {useLocalSearch} from '@/lib/useLocalSearch';
 import type {TaskListItem} from '@/lib/tasks';
+import {m} from '@/paraglide/messages.js';
 
 import {TaskList} from './TaskList';
 
@@ -33,8 +34,8 @@ export function TaskPickerDialog({
   return (
     <FullScreenDialog
       open={open}
-      title="Select a task"
-      closeLabel="Close"
+      title={m.select_task()}
+      closeLabel={m.close()}
       onClose={onClose}
     >
       <TaskPickerContent tasks={tasks} onPick={onPick} />
@@ -53,12 +54,12 @@ function TaskPickerContent({
     <TaskList
       tasks={results}
       onSelect={onPick}
-      emptyLabel={query ? 'No tasks match your search.' : 'No tasks available.'}
+      emptyLabel={query ? m.tasks_no_match() : m.tasks_none()}
       toolbar={
         <SearchBar
           value={query}
           onChange={setQuery}
-          placeholder="Search tasks"
+          placeholder={m.search_tasks()}
           autoFocus={false}
         />
       }

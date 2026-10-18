@@ -13,6 +13,7 @@ import {useInfiniteScroll} from '@/lib/useInfiniteScroll';
 import {useListSearch} from '@/lib/useListSearch';
 import {usePagedList} from '@/lib/usePagedList';
 import {useDialogParam} from '@/lib/useDialogParam';
+import {m} from '@/paraglide/messages.js';
 
 import './Report.css';
 
@@ -88,7 +89,7 @@ export default function Report() {
   if (profileLoading) {
     return (
       <main class="centered-container" aria-live="polite">
-        <p>Loading profile...</p>
+        <p>{m.profile_loading()}</p>
       </main>
     );
   }
@@ -97,9 +98,7 @@ export default function Report() {
     return (
       <main class="centered-container">
         <p role="alert">
-          {profileError
-            ? 'Could not load your profile.'
-            : 'No profile is available.'}
+          {profileError ? m.profile_load_error() : m.profile_unavailable()}
         </p>
       </main>
     );
@@ -107,35 +106,35 @@ export default function Report() {
 
   return (
     <div class="report-tab">
-      <h1>Reports</h1>
+      <h1>{m.reports()}</h1>
 
       {search.open ? (
         <SearchBar
           value={search.query}
           onChange={search.setQuery}
-          placeholder="Search by name or zone"
+          placeholder={m.search_by_name_or_zone()}
         />
       ) : null}
 
       <ListContainer
         showAdd={!isAdmin}
         showSearch
-        addLabel="Add report"
+        addLabel={m.report_add()}
         onAddClick={() => pickTask.open('1')}
-        searchLabel="Search reports"
+        searchLabel={m.report_search()}
         onSearchClick={search.toggle}
         className="report-list"
-        listLabel="Reports list"
+        listLabel={m.reports_list()}
       >
         {status === 'loading' ? (
-          <li class="report-loading">Loading reports...</li>
+          <li class="report-loading">{m.reports_loading()}</li>
         ) : null}
 
         {status === 'idle' && reports.length === 0 ? (
           <li class="report-empty">
             {search.term
-              ? `No reports match "${search.term}".`
-              : 'No reports available.'}
+              ? m.reports_no_match({term: search.term})
+              : m.reports_none()}
           </li>
         ) : null}
 
@@ -146,7 +145,7 @@ export default function Report() {
             details={[
               report.zone,
               report.errorMessage ??
-                (report.status === 'queued' ? 'Waiting to be sent · ' : '') +
+                (report.status === 'queued' ? `${m.status_queued()} · ` : '') +
                   formatReportDate(report.submitted_at),
             ]}
             actions={
@@ -163,17 +162,17 @@ export default function Report() {
       </ListContainer>
 
       <div ref={sentinelRef} class="report-loader" aria-live="polite">
-        {status === 'loadingMore' ? 'Loading more reports...' : null}
+        {status === 'loadingMore' ? m.reports_loading_more() : null}
         {status === 'error' ? (
           <>
-            <span role="alert">Could not load reports.</span>
+            <span role="alert">{m.reports_load_error()}</span>
             <mdui-button variant="text" onClick={retry}>
-              Retry
+              {m.retry()}
             </mdui-button>
           </>
         ) : null}
         {status === 'idle' && !hasMore && reports.length > 0
-          ? 'No more reports'
+          ? m.reports_no_more()
           : null}
       </div>
     </div>

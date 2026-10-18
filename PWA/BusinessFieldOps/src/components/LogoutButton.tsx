@@ -3,6 +3,7 @@ import {snackbar} from 'mdui/functions/snackbar.js';
 
 import {useState, useEffect, useRef} from 'preact/hooks';
 import {useAuth} from '@/lib/AuthContext';
+import {m} from '@/paraglide/messages.js';
 
 export default function LogoutButton() {
   const {signOut} = useAuth();
@@ -22,7 +23,7 @@ export default function LogoutButton() {
       if (mounted.current && error) {
         console.error('Sign out failed:', error.message);
         snackbar({
-          message: 'Could not sign out. Please try again.',
+          message: m.sign_out_error(),
           placement: 'top',
         });
       }
@@ -30,7 +31,7 @@ export default function LogoutButton() {
       if (mounted.current) {
         console.error('Sign out failed:', err);
         snackbar({
-          message: 'Could not sign out. Please try again.',
+          message: m.sign_out_error(),
           placement: 'top',
         });
       }
@@ -41,7 +42,7 @@ export default function LogoutButton() {
 
   return (
     <mdui-button icon="logout" disabled={signingOut} onClick={handleSignOut}>
-      {signingOut ? 'Signing out...' : 'Sign out'}
+      {signingOut ? m.signing_out() : m.signout()}
     </mdui-button>
   );
 }

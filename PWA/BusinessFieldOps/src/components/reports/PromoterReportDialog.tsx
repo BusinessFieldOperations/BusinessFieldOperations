@@ -26,6 +26,7 @@ import {
   validatePromoterReport,
 } from '@/lib/reportPayloads';
 import {useDialogParam} from '@/lib/useDialogParam';
+import {m} from '@/paraglide/messages.js';
 
 import {ProductPickerDialog} from './ProductPickerDialog';
 import {ReportFrame, type ReportDialogProps} from './ReportFrame';
@@ -55,25 +56,27 @@ function PromoterLineFields({
     <>
       <div class="report-form__row">
         <IntegerField
-          label="Initial"
+          label={m.product_initial()}
           value={line.initial}
           required
           onChange={initial => onChange({initial})}
         />
         <IntegerField
-          label="Restocked"
+          label={m.product_restocked()}
           value={line.restocked}
           onChange={restocked => onChange({restocked})}
         />
         <IntegerField
-          label="Final"
+          label={m.product_final()}
           value={line.final}
           required
           max={available}
           onChange={final => onChange({final})}
         />
       </div>
-      {sales !== null ? <p class="report-line__total">Sales: {sales}</p> : null}
+      {sales !== null ? (
+        <p class="report-line__total">{m.sales_label({sales})}</p>
+      ) : null}
     </>
   );
 }
@@ -171,7 +174,7 @@ export function PromoterReportDialog({
             />
 
             <section class="report-form__section">
-              <h3 class="report-form__heading">Products</h3>
+              <h3 class="report-form__heading">{m.products()}</h3>
               {value.lines.map(line => (
                 <ReportLineCard
                   key={line.productId}
@@ -198,7 +201,7 @@ export function PromoterReportDialog({
                 disabled={clientId === null}
                 onClick={() => pickProduct.open('1')}
               >
-                Add products
+                {m.add_products()}
               </mdui-button>
             </section>
           </>

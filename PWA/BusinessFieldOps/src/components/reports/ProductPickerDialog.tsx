@@ -11,6 +11,7 @@ import {PickerList} from '@/components/list';
 import {SearchBar} from '@/components/search';
 import type {CatalogProduct} from '@/lib/catalog';
 import {useLocalSearch} from '@/lib/useLocalSearch';
+import {m} from '@/paraglide/messages.js';
 
 /** Rows drawn at once: more than this is a search problem, not a scroll one. */
 const MAX_ROWS = 200;
@@ -104,11 +105,11 @@ function ProductPickerContent({
   return (
     <FullScreenDialog
       open
-      title="Add products"
-      closeLabel="Close"
+      title={m.add_products()}
+      closeLabel={m.close()}
       onClose={onClose}
       action={{
-        label: `Add (${selected.length})`,
+        label: m.add_count({count: selected.length}),
         onClick: () => onConfirm(selected),
         disabled: selected.length === 0,
       }}
@@ -138,19 +139,19 @@ function ProductPickerContent({
             <SearchBar
               value={query}
               onChange={setQuery}
-              placeholder="Search products"
+              placeholder={m.search_products()}
               autoFocus={false}
             />
             <div class="product-picker__filters">
               <SelectField
-                label="Brand"
+                label={m.brand()}
                 value={brand}
                 options={brands.map(value => ({value, label: value}))}
                 onChange={setBrand}
                 clearable
               />
               <SelectField
-                label="Category"
+                label={m.category()}
                 value={category}
                 options={categories.map(value => ({value, label: value}))}
                 onChange={setCategory}
@@ -159,18 +160,15 @@ function ProductPickerContent({
             </div>
           </>
         }
-        loadingLabel="Loading products..."
+        loadingLabel={m.products_loading()}
         emptyLabel={
-          isFiltering
-            ? 'No products match your filters.'
-            : 'No products to add.'
+          isFiltering ? m.products_no_match_filters() : m.products_none_to_add()
         }
-        listLabel="Products"
+        listLabel={m.products()}
       />
       {results && results.length > MAX_ROWS ? (
         <p class="product-picker__hint">
-          Showing the first {MAX_ROWS} of {results.length}. Use the search or
-          the filters to narrow them down.
+          {m.products_hint({max: MAX_ROWS, total: results.length})}
         </p>
       ) : null}
     </FullScreenDialog>

@@ -23,7 +23,7 @@ export default function Home() {
   if (profileLoading) {
     return (
       <main class="centered-container" aria-live="polite">
-        <p>Loading profile...</p>
+        <p>{m.profile_loading()}</p>
       </main>
     );
   }
@@ -32,9 +32,7 @@ export default function Home() {
     return (
       <main class="centered-container">
         <p role="alert">
-          {profileError
-            ? 'Could not load your profile.'
-            : 'No profile is available.'}
+          {profileError ? m.profile_load_error() : m.profile_unavailable()}
         </p>
       </main>
     );

@@ -8,6 +8,7 @@ import {useAuth} from '@/lib/AuthContext';
 import {reportKindForRole} from '@/lib/reportKinds';
 import {useAvailableTasks} from '@/lib/tasks';
 import {useDialogParam} from '@/lib/useDialogParam';
+import {m} from '@/paraglide/messages.js';
 
 import {TaskList} from './TaskList';
 
@@ -28,10 +29,10 @@ export function HomeTasks(): JSX.Element | null {
   return (
     <section class="home-tasks">
       <div class="home-tasks__header">
-        <h2 class="home-tasks__title">My tasks</h2>
+        <h2 class="home-tasks__title">{m.my_tasks()}</h2>
         {tasks && tasks.length > HOME_TASK_LIMIT ? (
           <mdui-button variant="text" onClick={() => pickTask.open('1')}>
-            View all ({tasks.length})
+            {m.view_all_count({count: tasks.length})}
           </mdui-button>
         ) : null}
       </div>
@@ -39,7 +40,7 @@ export function HomeTasks(): JSX.Element | null {
       <TaskList
         tasks={tasks?.slice(0, HOME_TASK_LIMIT)}
         onSelect={selected => task.open(selected.id)}
-        emptyLabel="No tasks assigned."
+        emptyLabel={m.tasks_none_assigned()}
       />
     </section>
   );

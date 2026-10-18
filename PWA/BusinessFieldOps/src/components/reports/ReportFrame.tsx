@@ -8,6 +8,7 @@ import {useEffect, useRef, useState} from 'preact/hooks';
 import {FullScreenDialog} from '@/components/dialog';
 import {joinClasses} from '@/components/list/classNames';
 import type {TaskListItem} from '@/lib/tasks';
+import {m} from '@/paraglide/messages.js';
 
 /** Props shared by the merchant and the promoter report dialogs. */
 export interface ReportDialogProps {
@@ -40,12 +41,12 @@ function DiscardDraft({onDiscard}: {onDiscard: () => void}): JSX.Element {
 
   return confirming ? (
     <div class="report-form__discard">
-      <span>Discard this draft?</span>
+      <span>{m.discard_draft_question()}</span>
       <mdui-button variant="text" onClick={() => setConfirming(false)}>
-        Cancel
+        {m.cancel()}
       </mdui-button>
       <mdui-button variant="text" onClick={onDiscard}>
-        Discard
+        {m.discard()}
       </mdui-button>
     </div>
   ) : (
@@ -55,7 +56,7 @@ function DiscardDraft({onDiscard}: {onDiscard: () => void}): JSX.Element {
         icon="delete"
         onClick={() => setConfirming(true)}
       >
-        Discard draft
+        {m.discard_draft()}
       </mdui-button>
     </div>
   );
@@ -99,20 +100,26 @@ export function ReportFrame({
   return (
     <FullScreenDialog
       open
-      title={task ? `Report · ${task.establishmentName}` : 'Report'}
-      closeLabel="Close"
+      title={
+        task
+          ? `${m.report_title()} · ${task.establishmentName}`
+          : m.report_title()
+      }
+      closeLabel={m.close()}
       onClose={onClose}
       action={
-        canEdit ? {label: 'Send', onClick: onSend, loading: sending} : undefined
+        canEdit
+          ? {label: m.send(), onClick: onSend, loading: sending}
+          : undefined
       }
     >
       {task === null ? (
         <p class="report-form__message" role="alert">
-          This task is not available anymore.
+          {m.task_unavailable()}
         </p>
       ) : null}
       {task === undefined || (task && !ready) ? (
-        <p class="report-form__message">Loading report...</p>
+        <p class="report-form__message">{m.report_loading()}</p>
       ) : null}
       {task && ready ? (
         <form

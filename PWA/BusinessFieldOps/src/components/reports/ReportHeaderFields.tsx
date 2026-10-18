@@ -4,6 +4,7 @@ import {SelectField, TextField} from '@/components/form';
 import type {ClientOption} from '@/lib/catalog';
 import type {ReportHeaderDraft} from '@/lib/reportDrafts';
 import type {TaskListItem} from '@/lib/tasks';
+import {m} from '@/paraglide/messages.js';
 
 /** Props of {@link ReportHeaderFields}. */
 export interface ReportHeaderFieldsProps {
@@ -37,9 +38,9 @@ export function ReportHeaderFields({
   let clientHelper: string | undefined;
 
   if (clientLocked) {
-    clientHelper = 'Remove the products to change the client.';
+    clientHelper = m.client_locked_helper();
   } else if (clients?.length === 0) {
-    clientHelper = 'No clients operate in this state.';
+    clientHelper = m.no_clients_helper();
   }
 
   return (
@@ -53,21 +54,21 @@ export function ReportHeaderFields({
       </div>
 
       <TextField
-        label="Salesman"
+        label={m.salesman()}
         value={salesmanName}
         required
         autocomplete="off"
         onChange={value => onChange({salesmanName: value})}
       />
       <TextField
-        label="Zone"
+        label={m.zone()}
         value={zone}
         required
         autocomplete="off"
         onChange={value => onChange({zone: value})}
       />
       <SelectField
-        label="Client"
+        label={m.client()}
         value={clientId ?? ''}
         options={(clients ?? []).map(client => ({
           value: client.id,

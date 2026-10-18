@@ -10,6 +10,7 @@ import 'mdui/components/navigation-bar-item.js';
 
 import {TABS, TabId} from '@/components/Tabs';
 import MainTitle from '@/components/MainTitle';
+import {ContactDialogs} from '@/components/contacts';
 import {TaskDialogs} from '@/components/tasks';
 import {ReportViewDialog} from '@/components/reports';
 
@@ -59,6 +60,7 @@ export default function DashboardLayout({tabs}: Props) {
       </mdui-layout>
       <TaskDialogs />
       <ReportViewDialog />
+      <ContactDialogs />
     </>
   );
 }

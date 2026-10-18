@@ -4,6 +4,8 @@ import 'mdui/components/avatar.js';
 import 'mdui/components/chip.js';
 import 'mdui/components/badge.js';
 
+import {m} from '@/paraglide/messages.js';
+
 interface HeroCardProps {
   avatarSrc?: string;
   avatarIcon?: string;
@@ -31,7 +33,7 @@ export default function HeroCard({
       <h2 class="title">{title}</h2>
 
       {chips.length > 0 && (
-        <div class="chips" role="group" aria-label="Groups">
+        <div class="chips" role="group" aria-label={m.groups()}>
           {chips.map(chip => (
             <mdui-chip key={chip}>{chip}</mdui-chip>
           ))}

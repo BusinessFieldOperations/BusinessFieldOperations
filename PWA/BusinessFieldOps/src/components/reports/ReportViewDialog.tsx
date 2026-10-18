@@ -37,10 +37,10 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 
 const formatDateTime = (value: string) => dateFormatter.format(new Date(value));
 
-const STATUS_LABELS: Record<ReportStatus, string> = {
-  sent: 'Sent',
-  queued: 'Waiting to be sent',
-  failed: 'Could not be sent',
+const STATUS_LABELS: Record<ReportStatus, () => string> = {
+  sent: () => m.status_sent(),
+  queued: () => m.status_queued(),
+  failed: () => m.status_failed(),
 };
 
 const STATUS_TONES: Record<ReportStatus, DetailTone> = {
@@ -102,17 +102,20 @@ function ReportViewContent({
   return (
     <FullScreenDialog
       open
-      title={report ? `Report · ${report.establishmentName}` : 'Report'}
-      closeLabel="Close"
+      title={
+        report
+          ? `${m.report_title()} · ${report.establishmentName}`
+          : m.report_title()
+      }
+      closeLabel={m.close()}
       onClose={onClose}
     >
       {report === undefined ? (
-        <p class="report-view__message">Loading report...</p>
+        <p class="report-view__message">{m.report_loading()}</p>
       ) : null}
       {report === null ? (
         <p class="report-view__message" role="alert">
-          This report is not available. If it was just sent, open it again from
-          the list.
+          {m.report_view_unavailable()}
         </p>
       ) : null}
       {report ? <ReportViewBody report={report} /> : null}
@@ -135,9 +138,11 @@ function MerchantInventory({report}: {report: ReportView}): JSX.Element {
   let content: JSX.Element | JSX.Element[];
 
   if (report.noInventory) {
-    content = <p class="report-view__muted">No inventory.</p>;
+    content = <p class="report-view__muted">{m.report_no_inventory()}</p>;
   } else if (report.merchantProducts.length === 0) {
-    content = <p class="report-view__muted">No products were counted.</p>;
+    content = (
+      <p class="report-view__muted">{m.report_no_products_counted()}</p>
+    );
   } else {
     content = report.merchantProducts.map((product: MerchantViewProduct) => (
       <div key={product.productId} class="report-view__product">
@@ -148,10 +153,10 @@ function MerchantInventory({report}: {report: ReportView}): JSX.Element {
               <p class="report-view__floor">{line.salesfloor}</p>
             )}
             <DetailStats>
-              <DetailStat label="Good" value={line.good} />
-              <DetailStat label="Damaged" value={line.damaged} />
-              <DetailStat label="Expired" value={line.expired} />
-              <DetailStat label="Total" value={line.total} />
+              <DetailStat label={m.product_good()} value={line.good} />
+              <DetailStat label={m.product_damaged()} value={line.damaged} />
+              <DetailStat label={m.product_expired()} value={line.expired} />
+              <DetailStat label={m.total()} value={line.total} />
             </DetailStats>
           </div>
         ))}
@@ -159,7 +164,7 @@ function MerchantInventory({report}: {report: ReportView}): JSX.Element {
     ));
   }
 
-  return <DetailSection title="Inventory">{content}</DetailSection>;
+  return <DetailSection title={m.inventory()}>{content}</DetailSection>;
 }
 
 function PromoterProducts({
@@ -168,18 +173,21 @@ function PromoterProducts({
   products: readonly PromoterViewProduct[];
 }): JSX.Element {
   return (
-    <DetailSection title="Products">
+    <DetailSection title={m.products()}>
       {products.length === 0 ? (
-        <p class="report-view__muted">No products.</p>
+        <p class="report-view__muted">{m.report_no_products()}</p>
       ) : (
         products.map(product => (
           <div key={product.productId} class="report-view__product">
             <ProductHeader product={product} />
             <DetailStats>
-              <DetailStat label="Initial" value={product.initial} />
-              <DetailStat label="Restocked" value={product.restocked} />
-              <DetailStat label="Final" value={product.final} />
-              <DetailStat label="Sales" value={product.sales} />
+              <DetailStat label={m.product_initial()} value={product.initial} />
+              <DetailStat
+                label={m.product_restocked()}
+                value={product.restocked}
+              />
+              <DetailStat label={m.product_final()} value={product.final} />
+              <DetailStat label={m.sales()} value={product.sales} />
             </DetailStats>
           </div>
         ))
@@ -194,18 +202,18 @@ function AdminInfo({info}: {info: ReportViewAdminInfo}): JSX.Element {
 
   return (
     <>
-      <DetailSection title="Sent by">
+      <DetailSection title={m.sent_by()}>
         <DetailGrid>
-          <DetailField label="Employee">
-            {reporter ? reporter.name : 'Unknown employee'}
+          <DetailField label={m.employee()}>
+            {reporter ? reporter.name : m.unknown_employee()}
           </DetailField>
           {reporter ? (
-            <DetailField label="Role">
+            <DetailField label={m.role()}>
               {ROLE_LABELS[reporter.role]()}
             </DetailField>
           ) : null}
           {reporter ? (
-            <DetailField label="Account">
+            <DetailField label={m.account()}>
               <DetailBadge tone={reporter.isActive ? 'ok' : 'error'}>
                 {reporter.isActive ? m.active() : m.inactive()}
               </DetailBadge>
@@ -214,18 +222,18 @@ function AdminInfo({info}: {info: ReportViewAdminInfo}): JSX.Element {
         </DetailGrid>
       </DetailSection>
 
-      <DetailSection title="GPS location">
+      <DetailSection title={m.gps_location()}>
         {location ? (
           <>
             <DetailGrid>
-              <DetailField label="Latitude">
+              <DetailField label={m.latitude()}>
                 {location.latitude.toFixed(6)}
               </DetailField>
-              <DetailField label="Longitude">
+              <DetailField label={m.longitude()}>
                 {location.longitude.toFixed(6)}
               </DetailField>
               {location.accuracyM === null ? null : (
-                <DetailField label="Accuracy">
+                <DetailField label={m.accuracy()}>
                   ±{Math.round(location.accuracyM)} m
                 </DetailField>
               )}
@@ -235,11 +243,11 @@ function AdminInfo({info}: {info: ReportViewAdminInfo}): JSX.Element {
               icon="map"
               onClick={() => void openExternal(mapsUrl(location))}
             >
-              Open in maps
+              {m.open_in_maps()}
             </mdui-button>
           </>
         ) : (
-          <p class="report-view__muted">No location was recorded.</p>
+          <p class="report-view__muted">{m.no_location()}</p>
         )}
       </DetailSection>
     </>
@@ -251,7 +259,7 @@ function ReportViewBody({report}: {report: ReportView}): JSX.Element {
     <div class="report-view">
       <section class="report-view__status">
         <DetailBadge tone={STATUS_TONES[report.status]}>
-          {STATUS_LABELS[report.status]}
+          {STATUS_LABELS[report.status]()}
         </DetailBadge>
         {report.errorMessage ? (
           <p class="report-view__error" role="alert">
@@ -260,37 +268,37 @@ function ReportViewBody({report}: {report: ReportView}): JSX.Element {
         ) : null}
       </section>
 
-      <DetailSection title="Visit">
+      <DetailSection title={m.visit()}>
         <DetailGrid>
-          <DetailField label="Establishment">
+          <DetailField label={m.establishment()}>
             {report.establishmentName}
           </DetailField>
           {report.place ? (
-            <DetailField label="Place">{report.place}</DetailField>
+            <DetailField label={m.place()}>{report.place}</DetailField>
           ) : null}
           {report.clientName ? (
-            <DetailField label="Client">{report.clientName}</DetailField>
+            <DetailField label={m.client()}>{report.clientName}</DetailField>
           ) : null}
-          <DetailField label="Salesman">{report.salesmanName}</DetailField>
-          <DetailField label="Zone">{report.zone}</DetailField>
-          <DetailField label="Captured">
+          <DetailField label={m.salesman()}>{report.salesmanName}</DetailField>
+          <DetailField label={m.zone()}>{report.zone}</DetailField>
+          <DetailField label={m.captured()}>
             {formatDateTime(report.capturedAt)}
           </DetailField>
           {report.submittedAt ? (
-            <DetailField label="Received">
+            <DetailField label={m.received()}>
               {formatDateTime(report.submittedAt)}
             </DetailField>
           ) : null}
         </DetailGrid>
         {report.taskDescription ? (
-          <DetailField label="Task">{report.taskDescription}</DetailField>
+          <DetailField label={m.task()}>{report.taskDescription}</DetailField>
         ) : null}
       </DetailSection>
 
       {report.admin ? <AdminInfo info={report.admin} /> : null}
 
       {report.kind === 'merchant' && report.salesfloors.length > 0 ? (
-        <DetailSection title="Salesfloors">
+        <DetailSection title={m.salesfloors()}>
           <div class="report-view__floors">
             {report.salesfloors.map(floor => (
               <DetailBadge key={floor}>{floor}</DetailBadge>
@@ -306,7 +314,7 @@ function ReportViewBody({report}: {report: ReportView}): JSX.Element {
       )}
 
       {report.observations ? (
-        <DetailSection title="Observations">
+        <DetailSection title={m.observations()}>
           <p class="report-view__text">{report.observations}</p>
         </DetailSection>
       ) : null}

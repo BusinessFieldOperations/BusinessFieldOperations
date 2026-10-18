@@ -10,6 +10,7 @@ import {ListContainer, ListItem} from '@/components/list';
 import type {TaskListItem} from '@/lib/tasks';
 import {OutboxItemActions} from '@/components/reports';
 import {setDialogParams} from '@/lib/useDialogParam';
+import {m} from '@/paraglide/messages.js';
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -40,16 +41,16 @@ export function TaskDialog({
   return (
     <FullScreenDialog
       open={open}
-      title={task ? task.establishmentName : 'Task'}
-      closeLabel="Close"
+      title={task ? task.establishmentName : m.task()}
+      closeLabel={m.close()}
       onClose={onClose}
     >
       {task === undefined ? (
-        <p class="task-dialog__message">Loading task...</p>
+        <p class="task-dialog__message">{m.task_loading()}</p>
       ) : null}
       {task === null ? (
         <p class="task-dialog__message" role="alert">
-          This task is not available anymore.
+          {m.task_unavailable()}
         </p>
       ) : null}
       {task ? (
@@ -80,20 +81,22 @@ function TaskDetails({
         ) : null}
         {place ? <p class="task-dialog__place">{place}</p> : null}
         <mdui-button icon="add" full-width onClick={onAddReport}>
-          Add report
+          {m.report_add()}
         </mdui-button>
       </section>
 
       {task.drafts.length > 0 ? (
         <section>
-          <h3 class="task-dialog__heading">Drafts</h3>
-          <ListContainer listLabel="Drafts">
+          <h3 class="task-dialog__heading">{m.drafts()}</h3>
+          <ListContainer listLabel={m.drafts()}>
             {task.drafts.map(draft => (
               <ListItem
                 key={draft.id}
                 icon={<mdui-icon name="edit_note" />}
-                headline="Draft"
-                details={[`Edited ${formatDateTime(draft.updatedAt)}`]}
+                headline={m.draft()}
+                details={[
+                  m.draft_edited({date: formatDateTime(draft.updatedAt)}),
+                ]}
                 itemAction={() => onOpenDraft(draft.id)}
               />
             ))}
@@ -102,18 +105,18 @@ function TaskDetails({
       ) : null}
 
       <section>
-        <h3 class="task-dialog__heading">Reports</h3>
+        <h3 class="task-dialog__heading">{m.reports()}</h3>
         {task.reports.length === 0 ? (
-          <p class="task-dialog__message">No reports yet.</p>
+          <p class="task-dialog__message">{m.reports_none()}</p>
         ) : (
-          <ListContainer listLabel="Reports">
+          <ListContainer listLabel={m.reports()}>
             {task.reports.map(report => {
               return (
                 <ListItem
                   key={report.key}
                   itemAction={() => setDialogParams({view: report.viewKey})}
                   icon={<mdui-icon name="assignment" />}
-                  headline={report.clientName || 'Report'}
+                  headline={report.clientName || m.report_title()}
                   details={[
                     [report.salesmanName, report.zone]
                       .filter(Boolean)

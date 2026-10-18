@@ -6,6 +6,7 @@ import type {ComponentChildren, JSX} from 'preact';
 
 import {PickerList, type ListItemProps} from '@/components/list';
 import type {TaskListItem} from '@/lib/tasks';
+import {m} from '@/paraglide/messages.js';
 
 /** Task icon; with at least one report it shows how many there are. */
 function TaskIcon({count}: {count: number}): JSX.Element {
@@ -13,7 +14,7 @@ function TaskIcon({count}: {count: number}): JSX.Element {
     <span class="task-icon">
       <mdui-icon name="assignment" />
       {count > 0 ? (
-        <span class="task-icon__count" title={`${count} reports`}>
+        <span class="task-icon__count" title={m.reports_count({count})}>
           {count > 99 ? '99+' : count}
         </span>
       ) : null}
@@ -32,7 +33,7 @@ function getTaskRow(task: TaskListItem): Omit<ListItemProps, 'itemAction'> {
     details: [place, task.description],
     actions:
       task.drafts.length > 0 ? (
-        <mdui-icon name="edit_note" title="Has a draft" />
+        <mdui-icon name="edit_note" title={m.has_draft()} />
       ) : null,
   };
 }
@@ -52,7 +53,7 @@ export interface TaskListProps {
 export function TaskList({
   tasks,
   onSelect,
-  emptyLabel = 'No tasks available.',
+  emptyLabel = m.tasks_none(),
   toolbar,
   className,
 }: TaskListProps): JSX.Element {
@@ -63,9 +64,9 @@ export function TaskList({
       getRow={getTaskRow}
       onPick={onSelect}
       toolbar={toolbar}
-      loadingLabel="Loading tasks..."
+      loadingLabel={m.tasks_loading()}
       emptyLabel={emptyLabel}
-      listLabel="Tasks"
+      listLabel={m.tasks()}
       className={className}
     />
   );

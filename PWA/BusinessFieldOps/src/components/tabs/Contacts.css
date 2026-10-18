@@ -1,0 +1,35 @@
+.contacts-tab {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Search bar and, for administrators, the user filter: same width as the list. */
+.contacts-filters {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+.contacts-list {
+  flex: 1 1 auto;
+}
+
+.contacts-empty,
+.contacts-loading {
+  padding: 1rem;
+  list-style: none;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  text-align: center;
+}
+
+.contacts-loader {
+  padding: 0.75rem 0 1rem;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  font-size: 0.75rem;
+  text-align: center;
+}

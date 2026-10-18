@@ -1,9 +1,11 @@
 import LogoutButton from '@/components/LogoutButton';
+import {m} from '@/paraglide/messages.js';
+
 export default function UnsupportedRole() {
   // DRAFT message and logout button
   return (
     <div>
-      Unknown Role, Refresh or update the app <LogoutButton></LogoutButton>
+      {m.unsupported_role()} <LogoutButton></LogoutButton>
     </div>
   );
 }

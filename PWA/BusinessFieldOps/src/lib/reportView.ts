@@ -4,6 +4,7 @@ import {describeDeliveryError} from '@/lib/offline/deliveryErrors';
 import {useLiveQuery} from '@/lib/offline/useLiveQuery';
 import type {UserRole} from '@/lib/profiles';
 import type {ReportKind, ReportStatus} from '@/lib/reports';
+import {m} from '@/paraglide/messages.js';
 
 // ------------------------------------------------------------------ keys
 
@@ -215,7 +216,7 @@ async function describeProducts(
 
 const unknownProduct = (productId: string): ReportViewProduct => ({
   productId,
-  name: 'Unknown product',
+  name: m.unknown_product(),
   meta: '',
 });
 

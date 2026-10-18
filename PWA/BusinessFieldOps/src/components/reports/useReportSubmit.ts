@@ -6,18 +6,16 @@ import {useRef, useState} from 'preact/hooks';
 import {getCurrentFix, type GeoFix} from '@/lib/geolocation';
 import {enqueue, type OfflineKind} from '@/lib/offline';
 import type {ReportProblem} from '@/lib/reportPayloads';
+import {m} from '@/paraglide/messages.js';
 
-const PROBLEM_MESSAGES: Record<ReportProblem, string> = {
-  missing_salesman: 'Enter the salesman name.',
-  missing_zone: 'Enter the zone.',
-  missing_client: 'Select a client.',
-  missing_state:
-    'This establishment is not fully synced yet. Connect and try again.',
-  missing_products: 'Add at least one product.',
-  missing_counts: 'Enter the counts of every product.',
-  invalid_counts:
-    'Check the counts: whole numbers only, and the final inventory cannot ' +
-    'exceed the initial plus the restocked units.',
+const PROBLEM_MESSAGES: Record<ReportProblem, () => string> = {
+  missing_salesman: () => m.report_problem_salesman(),
+  missing_zone: () => m.report_problem_zone(),
+  missing_client: () => m.report_problem_client(),
+  missing_state: () => m.report_problem_state(),
+  missing_products: () => m.report_problem_products(),
+  missing_counts: () => m.report_problem_counts(),
+  invalid_counts: () => m.report_problem_invalid_counts(),
 };
 
 /** Options of {@link useReportSubmit}. */
@@ -84,7 +82,7 @@ export function useReportSubmit({
     const problem = check();
 
     if (problem) {
-      setError(PROBLEM_MESSAGES[problem]);
+      setError(PROBLEM_MESSAGES[problem]());
       return;
     }
 
@@ -99,12 +97,12 @@ export function useReportSubmit({
       await reset();
       onQueued();
       snackbar({
-        message: 'Report saved on this device. It will be sent automatically.',
+        message: m.report_saved_device(),
         placement: 'top',
       });
     } catch (cause) {
       console.error('Failed to queue the report', cause);
-      setError('The report could not be saved on this device. Try again.');
+      setError(m.report_error_save());
     } finally {
       setSending(false);
     }
