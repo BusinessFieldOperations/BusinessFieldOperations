@@ -9,14 +9,18 @@ export function DetailSection({
   title,
   children,
   className,
+  highlight = false,
 }: {
   title: string;
   children: ComponentChildren;
   className?: string;
+  highlight?: boolean;
 }): JSX.Element {
   return (
     <section class={joinClasses('detail-section', className)}>
-      <h3 class="detail-section__title">{title}</h3>
+      <h3 class={joinClasses('detail-section__title', highlight && 'highlight')}>
+        {title}
+      </h3>
       {children}
     </section>
   );

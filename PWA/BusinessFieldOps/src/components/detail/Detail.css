@@ -9,7 +9,8 @@
   font-size: var(--mdui-typescale-title-small-size);
   line-height: var(--mdui-typescale-title-small-line-height);
   font-weight: var(--mdui-typescale-title-small-weight);
-  color: rgb(var(--mdui-color-on-surface-variant));
+  /* color: rgb(var(--mdui-color-on-surface-variant)); */
+  color:rgb(var(--mdui-color-primary));
 }
 
 .detail-grid {
@@ -87,4 +88,8 @@
 .detail-badge--error {
   color: rgb(var(--mdui-color-on-error-container));
   background: rgb(var(--mdui-color-error-container));
+}
+
+.highlight {
+  color:rgb(var(--mdui-color-tertiary));
 }

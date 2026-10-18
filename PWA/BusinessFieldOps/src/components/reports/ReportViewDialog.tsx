@@ -202,7 +202,7 @@ function AdminInfo({info}: {info: ReportViewAdminInfo}): JSX.Element {
 
   return (
     <>
-      <DetailSection title={m.sent_by()}>
+      <DetailSection highlight={true} title={m.sent_by()}>
         <DetailGrid>
           <DetailField label={m.employee()}>
             {reporter ? reporter.name : m.unknown_employee()}
@@ -268,6 +268,8 @@ function ReportViewBody({report}: {report: ReportView}): JSX.Element {
         ) : null}
       </section>
 
+      {report.admin ? <AdminInfo info={report.admin} /> : null}
+
       <DetailSection title={m.visit()}>
         <DetailGrid>
           <DetailField label={m.establishment()}>
@@ -294,8 +296,6 @@ function ReportViewBody({report}: {report: ReportView}): JSX.Element {
           <DetailField label={m.task()}>{report.taskDescription}</DetailField>
         ) : null}
       </DetailSection>
-
-      {report.admin ? <AdminInfo info={report.admin} /> : null}
 
       {report.kind === 'merchant' && report.salesfloors.length > 0 ? (
         <DetailSection title={m.salesfloors()}>
