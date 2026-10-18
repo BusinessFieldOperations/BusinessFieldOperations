@@ -1,0 +1,12 @@
+.recipient-picker__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding-block-end: 8px;
+}
+
+.recipient-picker__role {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
