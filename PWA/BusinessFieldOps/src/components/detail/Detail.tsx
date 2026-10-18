@@ -18,7 +18,9 @@ export function DetailSection({
 }): JSX.Element {
   return (
     <section class={joinClasses('detail-section', className)}>
-      <h3 class={joinClasses('detail-section__title', highlight && 'highlight')}>
+      <h3
+        class={joinClasses('detail-section__title', highlight && 'highlight')}
+      >
         {title}
       </h3>
       {children}
