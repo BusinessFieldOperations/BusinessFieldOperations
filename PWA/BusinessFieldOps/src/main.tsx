@@ -10,10 +10,16 @@ import {
   useOutboxSync,
   useReferenceSync,
 } from '@/lib/offline';
+import {getLocale} from '@/paraglide/runtime.js';
 
 import './Global.css';
 
 setColorScheme(import.meta.env.VITE_BUSINESS_COLOR_SCHEME || '#1976d2');
+
+// The active locale is detected from the stored preference or the browser's
+// preferred language (see the Paraglide `strategy` in vite.config.ts). Reflect
+// it on the document so the page language stays in sync.
+document.documentElement.lang = getLocale();
 
 import {render} from 'preact';
 import App from './App';

@@ -19,6 +19,9 @@ export default defineConfig(async ({mode}) => {
       paraglideVitePlugin({
         project: './project.inlang',
         outdir: './src/paraglide',
+        // A previously chosen language (cookie) wins, otherwise the browser's
+        // preferred language is detected automatically, then the base locale.
+        strategy: ['cookie', 'preferredLanguage', 'baseLocale'],
       }),
       preact(),
       VitePWA({
