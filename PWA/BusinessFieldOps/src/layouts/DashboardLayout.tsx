@@ -11,17 +11,35 @@ import 'mdui/components/navigation-bar-item.js';
 import {TABS, TabId} from '@/components/Tabs';
 import MainTitle from '@/components/MainTitle';
 import {ContactDialogs} from '@/components/contacts';
-import {TaskDialogs} from '@/components/tasks';
+import {AdminTaskDialogs, TaskDialogs} from '@/components/tasks';
 import {ReportViewDialog} from '@/components/reports';
 
 interface Props {
+  /** Tabs of the navigation bar, in order. The first one is the default. */
   tabs: readonly TabId[];
+  /**
+   * Tabs that have a route but no button in the bar: they are opened from
+   * somewhere else (see `openDashboardTab`). While one is showing, no button
+   * of the bar is highlighted.
+   */
+  hiddenTabs?: readonly TabId[];
   //   context: DashboardContext;
 }
 
-export default function DashboardLayout({tabs}: Props) {
+const NO_HIDDEN_TABS: readonly TabId[] = [];
+
+export default function DashboardLayout({
+  tabs,
+  hiddenTabs = NO_HIDDEN_TABS,
+}: Props) {
   const [LOCATION, navigate] = useLocation();
   const ACTIVE_TAB = LOCATION.split('/')[1] ?? '';
+  const ROUTED_TABS = [...tabs, ...hiddenTabs];
+  // A hidden tab is not in the bar. Leaving the bar without a value (instead
+  // of keeping the previous one) means tapping any button is a real change.
+  const NAV_VALUE = (tabs as readonly string[]).includes(ACTIVE_TAB)
+    ? ACTIVE_TAB
+    : '';
 
   const handleNavChange = (e: Event) => {
     const VALUE = (e.currentTarget as NavigationBar).value;
@@ -35,7 +53,7 @@ export default function DashboardLayout({tabs}: Props) {
           <MainTitle />
 
           <Switch>
-            {tabs.map(id => (
+            {ROUTED_TABS.map(id => (
               <Route key={id} path={`/${id}`} nest>
                 {TABS[id].render()}
               </Route>
@@ -47,7 +65,7 @@ export default function DashboardLayout({tabs}: Props) {
         </mdui-layout-main>
 
         <mdui-navigation-bar
-          value={ACTIVE_TAB}
+          value={NAV_VALUE}
           onChange={handleNavChange}
           label-visibility="labeled"
         >
@@ -59,6 +77,7 @@ export default function DashboardLayout({tabs}: Props) {
         </mdui-navigation-bar>
       </mdui-layout>
       <TaskDialogs />
+      <AdminTaskDialogs />
       <ReportViewDialog />
       <ContactDialogs />
     </>
