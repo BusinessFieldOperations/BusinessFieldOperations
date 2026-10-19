@@ -85,6 +85,11 @@
   background: rgb(var(--mdui-color-secondary-container));
 }
 
+.detail-badge--info {
+  color: rgb(var(--mdui-color-on-primary-container));
+  background: rgb(var(--mdui-color-primary-container));
+}
+
 .detail-badge--error {
   color: rgb(var(--mdui-color-on-error-container));
   background: rgb(var(--mdui-color-error-container));

@@ -78,7 +78,7 @@ export function DetailStat({
   );
 }
 
-export type DetailTone = 'neutral' | 'ok' | 'error';
+export type DetailTone = 'neutral' | 'ok' | 'error' | 'info';
 
 /** A short status label (sent, active, failed...). */
 export function DetailBadge({

@@ -47,6 +47,8 @@ export interface RecipientPickerDialogProps {
   onClose: () => void;
   /** The whole selection, not only what was added. */
   onConfirm: (_userIds: string[]) => void;
+  /** Roles offered in the role filter. Defaults to all of them. */
+  roles?: readonly UserRole[];
 }
 
 /**
@@ -63,6 +65,7 @@ export function RecipientPickerDialog({
 
 function RecipientPickerContent({
   users,
+  roles = ROLES,
   selected: initial,
   onClose,
   onConfirm,
@@ -139,7 +142,7 @@ function RecipientPickerContent({
                 className="recipient-picker__role"
                 label={m.contact_recipients_role()}
                 value={role}
-                options={ROLES.map(value => ({
+                options={roles.map(value => ({
                   value,
                   label: ROLE_LABELS[value](),
                 }))}

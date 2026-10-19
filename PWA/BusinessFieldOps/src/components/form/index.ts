@@ -1,3 +1,5 @@
+export {DateField} from './DateField';
+export type {DateFieldProps} from './DateField';
 export {DeletableChip} from './DeletableChip';
 export type {DeletableChipProps} from './DeletableChip';
 export {IntegerField} from './IntegerField';
