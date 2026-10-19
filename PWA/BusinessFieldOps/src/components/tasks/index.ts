@@ -1,3 +1,7 @@
+export {AdminHomeActions} from './AdminHomeActions';
+export {AdminTaskDialogs} from './AdminTaskDialogs';
+export {AdminTaskIcon} from './AdminTaskIcon';
+export type {AdminTaskIconProps} from './AdminTaskIcon';
 export {HomeTasks} from './HomeTasks';
 export {TaskDialog} from './TaskDialog';
 export type {TaskDialogProps} from './TaskDialog';
@@ -6,3 +10,5 @@ export {TaskList} from './TaskList';
 export type {TaskListProps} from './TaskList';
 export {TaskPickerDialog} from './TaskPickerDialog';
 export type {TaskPickerDialogProps} from './TaskPickerDialog';
+export {TaskStateBadge} from './TaskStateBadge';
+export type {TaskStateBadgeProps} from './TaskStateBadge';

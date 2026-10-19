@@ -1,0 +1,6 @@
+/* DetailBadge aligns itself to the top of a column; inside this wrapper it
+ * simply takes its own height, so it also sits centered in list actions. */
+.task-state {
+  display: inline-flex;
+  align-items: center;
+}

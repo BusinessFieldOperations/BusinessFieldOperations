@@ -1,0 +1,14 @@
+.admin-home-actions {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding: 16px;
+}
+
+/* Side by side when there is room, one per row on narrow screens. */
+.admin-home-actions > * {
+  flex: 1 1 12rem;
+}

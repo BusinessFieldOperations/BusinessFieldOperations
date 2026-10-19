@@ -1,0 +1,120 @@
+/* ---- New task form ---- */
+
+.admin-task-form {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding: 16px;
+}
+
+.admin-task-form--busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.admin-task-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-task-form__heading {
+  margin: 0;
+  font-size: var(--mdui-typescale-title-small-size);
+  line-height: var(--mdui-typescale-title-small-line-height);
+  font-weight: var(--mdui-typescale-title-small-weight);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.admin-task-form__selected {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-task-form__selected-name {
+  margin: 0;
+  font-size: var(--mdui-typescale-title-medium-size);
+  line-height: var(--mdui-typescale-title-medium-line-height);
+  font-weight: var(--mdui-typescale-title-medium-weight);
+}
+
+.admin-task-form__muted {
+  margin: 0;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.admin-task-form__error {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--mdui-shape-corner-medium, 12px);
+  color: rgb(var(--mdui-color-on-error-container));
+  background: rgb(var(--mdui-color-error-container));
+}
+
+.admin-task-form__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---- Task detail ---- */
+
+.admin-task-detail {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-block: 16px;
+}
+
+.admin-task-detail__info {
+  padding-inline: 16px;
+}
+
+.admin-task-detail__heading {
+  margin: 0;
+  padding-inline: 16px;
+  font-size: var(--mdui-typescale-title-small-size);
+  line-height: var(--mdui-typescale-title-small-line-height);
+  font-weight: var(--mdui-typescale-title-small-weight);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.admin-task-detail__message {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.admin-task-detail__error {
+  margin: 0 16px;
+  padding: 12px 16px;
+  border-radius: var(--mdui-shape-corner-medium, 12px);
+  color: rgb(var(--mdui-color-on-error-container));
+  background: rgb(var(--mdui-color-error-container));
+}
+
+/* Complete / reopen button, or its confirmation (question, Cancel, Confirm). */
+.admin-task-detail__action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-inline: 16px;
+}
+
+/* Takes its own row under the confirmation buttons. */
+.admin-task-detail__warning {
+  flex: 1 1 100%;
+  margin: 0;
+  text-align: end;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
