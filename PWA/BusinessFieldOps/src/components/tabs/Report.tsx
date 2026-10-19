@@ -14,6 +14,8 @@ import {useListSearch} from '@/lib/useListSearch';
 import {usePagedList} from '@/lib/usePagedList';
 import {useDialogParam} from '@/lib/useDialogParam';
 import {m} from '@/paraglide/messages.js';
+import 'mdui/components/button-icon.js';
+import {openDashboardTab} from '@/lib/dashboardNavigation';
 
 import './Report.css';
 
@@ -106,7 +108,17 @@ export default function Report() {
 
   return (
     <div class="report-tab">
-      <h1>{m.reports()}</h1>
+      <div class="report-tab__header">
+        {isAdmin ? (
+          <mdui-button-icon
+            class="report-tab__back"
+            icon="arrow_back"
+            aria-label={m.back()}
+            onClick={() => openDashboardTab('home')}
+          />
+        ) : null}
+        <h1 class="report-tab__title">{m.reports()}</h1>
+      </div>
 
       {search.open ? (
         <SearchBar

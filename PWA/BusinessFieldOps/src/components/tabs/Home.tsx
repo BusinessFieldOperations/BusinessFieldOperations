@@ -7,9 +7,9 @@ import LogoutButton from '@/components/LogoutButton';
 
 import {useAuth} from '@/lib/AuthContext';
 import type {UserRole} from '@/lib/profiles';
-import {HomeTasks} from '@/components/tasks';
 import {m} from '@/paraglide/messages.js';
 import {Fragment} from 'preact/jsx-runtime';
+import {AdminHomeActions, HomeTasks} from '@/components/tasks';
 
 const ROLE_LABELS: Record<UserRole, () => string> = {
   merchant: () => m.merchant(),
@@ -53,7 +53,8 @@ export default function Home() {
 
       <mdui-divider></mdui-divider>
 
-      {/* Admin: Assign, review task*/}
+      <AdminHomeActions />
+      <HomeTasks />
       <HomeTasks />
     </Fragment>
   );

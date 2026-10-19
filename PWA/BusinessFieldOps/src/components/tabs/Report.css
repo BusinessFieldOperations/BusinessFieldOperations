@@ -27,6 +27,21 @@
   font-weight: 500;
 }
 
-/* .detail p {
-  margin:0;
-} */
+/* Back button on the left (administrators), title always centered. */
+.report-tab__header {
+  display: grid;
+  grid-template-columns: 3rem 1fr 3rem;
+  align-items: center;
+  padding-inline: 8px;
+}
+
+.report-tab__back {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.report-tab__title {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: center;
+}

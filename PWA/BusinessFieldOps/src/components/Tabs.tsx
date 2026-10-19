@@ -2,6 +2,7 @@ import type {VNode} from 'preact';
 
 import Home from './tabs/Home';
 import Report from './tabs/Report';
+import Tasks from './tabs/Tasks';
 import Contacts from './tabs/Contacts';
 import Users from './tabs/Users';
 
@@ -31,6 +32,11 @@ export const TABS = {
     icon: 'analytics',
     label: m.reports(),
     render: () => <Report />,
+  },
+  tasks: {
+    icon: 'assignment',
+    label: m.tasks(),
+    render: () => <Tasks />,
   },
   contacts: {
     icon: 'contacts',
