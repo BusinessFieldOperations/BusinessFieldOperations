@@ -718,6 +718,10 @@ export type Database = {
         Args: {p_contact: Json; p_owner_ids: string[]};
         Returns: Json;
       };
+      set_task_completed: {
+        Args: {p_completed: boolean; p_task_id: string};
+        Returns: Json;
+      };
       submit_contact: {Args: {p_contact: Json}; Returns: Json};
       submit_merchant_report: {Args: {p_report: Json}; Returns: Json};
       submit_promoter_report: {Args: {p_report: Json}; Returns: Json};
