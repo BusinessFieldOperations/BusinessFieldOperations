@@ -1,18 +1,26 @@
 import 'mdui/components/button.js';
 
-import {useCallback} from 'preact/hooks';
+import {useCallback, useMemo, useState} from 'preact/hooks';
 
+import {SelectField} from '@/components/form';
 import {ListContainer, ListItem} from '@/components/list';
 import {SearchBar} from '@/components/search';
 import {useAuth} from '@/lib/AuthContext';
 import type {PageRequest} from '@/lib/pagination';
 import {getCachedReportsPage, type ReportListItem} from '@/lib/reports';
 import {OutboxItemActions} from '@/components/reports';
-import {db, listOutbox, REFERENCE_META_KEY, useLiveQuery} from '@/lib/offline';
+import {
+  db,
+  listOutbox,
+  REFERENCE_META_KEY,
+  useLiveQuery,
+  useReferenceTable,
+} from '@/lib/offline';
 import {useInfiniteScroll} from '@/lib/useInfiniteScroll';
 import {useListSearch} from '@/lib/useListSearch';
 import {usePagedList} from '@/lib/usePagedList';
 import {useDialogParam} from '@/lib/useDialogParam';
+import {useUrlFilter} from '@/lib/useUrlFilter';
 import {m} from '@/paraglide/messages.js';
 import 'mdui/components/button-icon.js';
 import {openDashboardTab} from '@/lib/dashboardNavigation';
@@ -33,7 +41,13 @@ export default function Report() {
   const isAdmin = profile?.role === 'administrator';
   const profileId = profile?.id;
   const profileRole = profile?.role;
-  const search = useListSearch();
+  // Handed over by the Users tab (`?user=<id>`): the list starts filtered, with
+  // the filter visible.
+  const initialReporter = useUrlFilter('user');
+  const search = useListSearch(300, 2, initialReporter !== '');
+  // Administrators only: show the reports of one user.
+  const [reporterId, setReporterId] = useState(initialReporter);
+  const profiles = useReferenceTable('profiles');
   const lastSyncedAt = useLiveQuery(
     async () => (await db.syncMeta.get(REFERENCE_META_KEY))?.syncedAt ?? null,
     [],
@@ -50,6 +64,19 @@ export default function Report() {
     '',
   );
 
+  // Reports are only ever made by merchants and promoters.
+  const userOptions = useMemo(
+    () =>
+      (profiles ?? [])
+        .filter(user => user.role !== 'administrator')
+        .map(user => ({
+          value: user.id,
+          label: `${user.first_name} ${user.last_name}`.trim(),
+        }))
+        .sort((first, second) => first.label.localeCompare(second.label)),
+    [profiles],
+  );
+
   const fetchReports = useCallback(
     (request: PageRequest) =>
       profileId && profileRole
@@ -58,10 +85,18 @@ export default function Report() {
             userId: profileId,
             role: profileRole,
             search: search.term,
+            reporterId: reporterId || null,
           })
         : Promise.resolve({items: [], hasMore: false}),
     // Refresh when the cached tables finish syncing or another user signs in.
-    [search.term, profileId, profileRole, lastSyncedAt, outboxSignature],
+    [
+      search.term,
+      reporterId,
+      profileId,
+      profileRole,
+      lastSyncedAt,
+      outboxSignature,
+    ],
   );
 
   const getReportKey = (report: ReportListItem) =>
@@ -106,6 +141,14 @@ export default function Report() {
     );
   }
 
+  // Closing the search also drops the user filter, like it drops the text.
+  const handleSearchClick = () => {
+    if (search.open) {
+      setReporterId('');
+    }
+    search.toggle();
+  };
+
   return (
     <div class="report-tab">
       <div class="report-tab__header">
@@ -121,11 +164,22 @@ export default function Report() {
       </div>
 
       {search.open ? (
-        <SearchBar
-          value={search.query}
-          onChange={search.setQuery}
-          placeholder={m.search_by_name_or_zone()}
-        />
+        <div class="report-filters">
+          <SearchBar
+            value={search.query}
+            onChange={search.setQuery}
+            placeholder={m.search_by_name_or_zone()}
+          />
+          {isAdmin ? (
+            <SelectField
+              label={m.reports_filter_user()}
+              value={reporterId}
+              options={userOptions}
+              onChange={setReporterId}
+              clearable
+            />
+          ) : null}
+        </div>
       ) : null}
 
       <ListContainer
@@ -134,7 +188,7 @@ export default function Report() {
         addLabel={m.report_add()}
         onAddClick={() => pickTask.open('1')}
         searchLabel={m.report_search()}
-        onSearchClick={search.toggle}
+        onSearchClick={handleSearchClick}
         className="report-list"
         listLabel={m.reports_list()}
       >

@@ -45,3 +45,14 @@
   grid-row: 1;
   text-align: center;
 }
+
+/* Search bar and, for administrators, the user filter: same width as the list. */
+.report-filters {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-inline: 16px;
+}

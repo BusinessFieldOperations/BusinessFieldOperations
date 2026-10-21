@@ -17,9 +17,14 @@ export interface TextFieldProps {
   /** More than one row makes it a multi-line field. */
   rows?: number;
   maxLength?: number;
+  /** Shorter text fails native validation (an empty field is not checked). */
+  minLength?: number;
   autocomplete?: string;
-  /** Native input type; `email` gives the right keyboard and validation. */
-  type?: 'text' | 'email' | 'tel';
+  /**
+   * Native input type; `email` gives the right keyboard and validation, and
+   * `password` hides the text and adds a show/hide button.
+   */
+  type?: 'text' | 'email' | 'tel' | 'password';
   /** Called on Enter (which then does not submit the surrounding form). */
   onEnter?: () => void;
   className?: string;
@@ -35,6 +40,7 @@ export function TextField({
   helper,
   rows,
   maxLength,
+  minLength,
   autocomplete,
   type,
   onEnter,
@@ -45,12 +51,14 @@ export function TextField({
       class={joinClasses('form-field', className)}
       variant="outlined"
       type={type}
+      toggle-password={type === 'password'}
       label={label}
       helper={helper}
       required={required}
       disabled={disabled}
       rows={rows}
       maxlength={maxLength}
+      minlength={minLength}
       autocomplete={autocomplete}
       value={value}
       onInput={e => onChange((e.currentTarget as HTMLInputElement).value)}

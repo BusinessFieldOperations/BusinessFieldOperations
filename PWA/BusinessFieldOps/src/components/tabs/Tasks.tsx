@@ -25,6 +25,7 @@ import {useInfiniteScroll} from '@/lib/useInfiniteScroll';
 import {useListSearch} from '@/lib/useListSearch';
 import {usePagedList} from '@/lib/usePagedList';
 import {m} from '@/paraglide/messages.js';
+import {useUrlFilter} from '@/lib/useUrlFilter';
 
 import './Tasks.css';
 
@@ -65,8 +66,9 @@ export default function Tasks() {
   const profileId = profile?.id;
   const isAdmin = profile?.role === 'administrator';
   const adminTask = useDialogParam('adminTask');
-  const search = useListSearch();
-  const [assigneeId, setAssigneeId] = useState('');
+  const initialUser = useUrlFilter('user');
+  const search = useListSearch(300, 2, initialUser !== '');
+  const [assigneeId, setAssigneeId] = useState(initialUser);
   const [status, setStatus] = useState<AdminTaskStatusFilter>('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');

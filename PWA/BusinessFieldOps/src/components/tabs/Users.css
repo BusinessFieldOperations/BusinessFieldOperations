@@ -1,0 +1,55 @@
+.users-tab {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Search bar and filters: same width as the list. */
+.users-filters {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+/* As many columns as fit: one per row on a phone, both side by side wider. */
+.users-filters__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 12px;
+  padding-block-end: 8px;
+}
+
+.users-list {
+  flex: 1 1 auto;
+}
+
+/* An inactive account is quieter than the ones that can still work. */
+.user--inactive .text {
+  opacity: 0.6;
+}
+
+/* DetailBadge aligns itself to the top of a column; inside this wrapper it
+ * simply takes its own height, so it also sits centered in list actions. */
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+}
+
+.users-empty,
+.users-loading {
+  padding: 1rem;
+  list-style: none;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  text-align: center;
+}
+
+.users-loader {
+  padding: 0.75rem 0 1rem;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  font-size: 0.75rem;
+  text-align: center;
+}
