@@ -26,10 +26,16 @@ export interface ListSearch {
  *
  * @param minLength Shorter terms are ignored. Trigram indexes only help from
  *     3 characters, so very short terms just scan the table.
+ * @param initialOpen Starts with the search bar (and the filters next to it)
+ *     visible, e.g. when the tab opens with a filter already set.
  */
-export function useListSearch(delayMs = 300, minLength = 2): ListSearch {
+export function useListSearch(
+  delayMs = 300,
+  minLength = 2,
+  initialOpen = false,
+): ListSearch {
   const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const debounced = useDebouncedValue(query.trim(), delayMs);
 
   const toggle = useCallback(() => {

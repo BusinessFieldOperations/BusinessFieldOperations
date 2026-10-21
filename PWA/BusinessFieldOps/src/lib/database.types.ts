@@ -478,6 +478,7 @@ export type Database = {
       profiles: {
         Row: {
           ci: string | null;
+          email: string | null;
           first_name: string;
           id: string;
           is_active: boolean;
@@ -486,6 +487,7 @@ export type Database = {
         };
         Insert: {
           ci?: string | null;
+          email?: string | null;
           first_name?: string;
           id: string;
           is_active?: boolean;
@@ -494,6 +496,7 @@ export type Database = {
         };
         Update: {
           ci?: string | null;
+          email?: string | null;
           first_name?: string;
           id?: string;
           is_active?: boolean;

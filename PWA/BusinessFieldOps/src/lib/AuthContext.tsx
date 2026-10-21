@@ -21,6 +21,7 @@ interface AuthState {
   profileLoading: boolean;
   profileError: boolean;
   signOut: () => Promise<{error: AuthError | null}>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthState>({
   profileLoading: true,
   profileError: false,
   signOut: () => supabase.auth.signOut(),
+  refreshProfile: async () => undefined,
 });
 
 export function AuthProvider({children}: {children: ComponentChildren}) {
@@ -138,9 +140,39 @@ export function AuthProvider({children}: {children: ComponentChildren}) {
 
   const signOut = useCallback(() => supabase.auth.signOut(), []);
 
+  const refreshProfile = useCallback(async () => {
+    const userId = currentSession.current?.user.id;
+
+    if (!userId) {
+      return;
+    }
+
+    try {
+      setProfile(await getProfile(userId));
+    } catch (error) {
+      console.warn('Failed to refresh profile:', error);
+    }
+  }, []);
+
   const value = useMemo(
-    () => ({session, loading, profile, profileLoading, profileError, signOut}),
-    [session, loading, profile, profileLoading, profileError, signOut],
+    () => ({
+      session,
+      loading,
+      profile,
+      profileLoading,
+      profileError,
+      signOut,
+      refreshProfile,
+    }),
+    [
+      session,
+      loading,
+      profile,
+      profileLoading,
+      profileError,
+      signOut,
+      refreshProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

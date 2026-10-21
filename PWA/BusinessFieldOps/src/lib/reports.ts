@@ -4,6 +4,7 @@ import {listOutbox} from '@/lib/offline/outbox';
 import type {OutboxItem} from '@/lib/offline/types';
 import {toPage, type Page, type PageRequest} from '@/lib/pagination';
 import type {UserRole} from '@/lib/profiles';
+import type {Table} from 'dexie';
 
 export type ReportKind = 'merchant' | 'promoter';
 
@@ -37,6 +38,7 @@ export interface CachedReportsPageRequest extends PageRequest {
   role: UserRole;
   /** Text to look for in salesman name and zone. Empty means no filter. */
   search?: string;
+  reporterId?: string | null;
 }
 
 type ServerRow =
@@ -119,30 +121,32 @@ export async function getCachedReportsPage({
   userId,
   role,
   search = '',
+  reporterId = null,
 }: CachedReportsPageRequest): Promise<Page<ReportListItem>> {
+  /** All rows of a table, or only those whose indexed `column` is `owner`. */
+  function rowsOf<Row>(
+    table: Table<Row, IDBValidKey>,
+    column: string,
+    owner: string | null,
+  ): Promise<Row[]> {
+    return owner
+      ? table.where(column).equals(owner).toArray()
+      : table.toArray();
+  }
+
+  const isAdmin = role === 'administrator';
+  // Administrators read every cached row (or those of one user); everybody
+  // else only their own.
+  const owner = isAdmin ? reporterId : userId;
   const [merchantRows, promoterRows, outbox] = await Promise.all([
-    role === 'administrator'
-      ? db.reference('merchant_reports').toArray()
-      : role === 'merchant'
-        ? db
-            .reference('merchant_reports')
-            .where('merchant_id')
-            .equals(userId)
-            .toArray()
-        : Promise.resolve([]),
-    role === 'administrator'
-      ? db.reference('promoter_reports').toArray()
-      : role === 'promoter'
-        ? db
-            .reference('promoter_reports')
-            .where('promoter_id')
-            .equals(userId)
-            .toArray()
-        : Promise.resolve([]),
+    isAdmin || role === 'merchant'
+      ? rowsOf(db.reference('merchant_reports'), 'merchant_id', owner)
+      : Promise.resolve([]),
+    isAdmin || role === 'promoter'
+      ? rowsOf(db.reference('promoter_reports'), 'promoter_id', owner)
+      : Promise.resolve([]),
     // Administrators do not create reports, so they have no outbox.
-    role === 'administrator'
-      ? Promise.resolve<OutboxItem[]>([])
-      : listOutbox(userId),
+    isAdmin ? Promise.resolve<OutboxItem[]>([]) : listOutbox(userId),
   ]);
 
   const sent = [
