@@ -13,6 +13,7 @@ import MainTitle from '@/components/MainTitle';
 import {ContactDialogs} from '@/components/contacts';
 import {AdminTaskDialogs, TaskDialogs} from '@/components/tasks';
 import {ReportViewDialog} from '@/components/reports';
+import {UserDialogs} from '@/components/users';
 
 interface Props {
   /** Tabs of the navigation bar, in order. The first one is the default. */
@@ -80,6 +81,7 @@ export default function DashboardLayout({
       <AdminTaskDialogs />
       <ReportViewDialog />
       <ContactDialogs />
+      <UserDialogs />
     </>
   );
 }
