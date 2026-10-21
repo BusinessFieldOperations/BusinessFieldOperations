@@ -1,0 +1,35 @@
+.location-access {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.location-access__title {
+  margin: 0;
+  font-size: var(--mdui-typescale-title-small-size);
+  line-height: var(--mdui-typescale-title-small-line-height);
+  font-weight: var(--mdui-typescale-title-small-weight);
+  color: rgb(var(--mdui-color-primary));
+}
+
+.location-access__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: rgb(var(--mdui-color-on-surface));
+  font-size: var(--mdui-typescale-body-medium-size);
+  line-height: var(--mdui-typescale-body-medium-line-height);
+}
+
+.location-access__spinner {
+  --mdui-circular-progress-size: 20px;
+  flex: none;
+}
+
+.location-access__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
