@@ -9,6 +9,29 @@ Business Field Operations is a App that helps you manage your business operation
 
 ### Overview
 
+#### development workflow (Before commit)
+
+*DB*
+
+any change on the db schemas is follow by
+```
+# Start a docker container
+# pnpm supabase start
+pnpm supabase db schema declarative sync 
+pnpm supabase db push
+pnpm run generate:types
+```
+
+this makes a migration from the schemas files, push the changes and gen the types (PWA)
+
+*PWA*
+any change on PWA is follow by
+```
+pnpm run fix        # lint
+pnpm run prepare    # build i18n, images etc
+pnpm run compile    # tsc
+```
+
 ### Structure
 
 ```
