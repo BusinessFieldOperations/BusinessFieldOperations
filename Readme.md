@@ -24,6 +24,19 @@ pnpm run generate:types
 
 this makes a migration from the schemas files, push the changes and gen the types (PWA)
 
+any change on the edge functions (`DB/supabase/functions`) is follow by
+```
+# deploys every function of the folder to the linked project
+pnpm supabase functions deploy
+```
+
+the project ref and the access token come from `DB/.env`
+(`SUPABASE_PROJECT_ID`, `SUPABASE_ACCESS_TOKEN`)
+
+> the PWA calls these functions at runtime: if one is missing on the server the
+> browser gets a `404` with a CORS error, not a readable answer. Deploy them
+> before shipping a release that uses them.
+
 *PWA*
 any change on PWA is follow by
 ```
@@ -75,6 +88,7 @@ Scripts/ (Automation)
 - [ ] Better Readme (yes even better)
 - [ ] Handle `error.message` translations
 - [x] Github CI/CD: PWA lint/test and build
+- [x] Github CI/CD: deploy supabase edge functions
 - [ ] Github CI/CD: DB lint/test
 - [ ] PDF report download
 - [ ] User profile image (supabase? workspaces?)
