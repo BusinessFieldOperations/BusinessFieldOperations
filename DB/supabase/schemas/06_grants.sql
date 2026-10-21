@@ -63,3 +63,10 @@ GRANT EXECUTE ON FUNCTION public.update_contact (jsonb) TO authenticated;
 -- caller is an administrator.
 REVOKE ALL ON FUNCTION public.assign_contact (jsonb, uuid[]) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.assign_contact (jsonb, uuid[]) TO authenticated;
+
+--- Tasks (administrator actions)
+
+-- Callable by any signed-in user, but it raises 'not_allowed' unless the
+-- caller is an administrator.
+REVOKE ALL ON FUNCTION public.set_task_completed (uuid, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.set_task_completed (uuid, boolean) TO authenticated;
