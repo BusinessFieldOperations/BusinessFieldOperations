@@ -1,0 +1,55 @@
+.user-form {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding: 16px;
+}
+
+.user-form--busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.user-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* First and last name: side by side when there is room, stacked on a phone. */
+.user-form__names {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 16px;
+}
+
+.user-form__heading {
+  margin: 0;
+  font-size: var(--mdui-typescale-title-small-size);
+  line-height: var(--mdui-typescale-title-small-line-height);
+  font-weight: var(--mdui-typescale-title-small-weight);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.user-form__muted {
+  margin: 0;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.user-form__message {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.user-form__error {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--mdui-shape-corner-medium, 12px);
+  color: rgb(var(--mdui-color-on-error-container));
+  background: rgb(var(--mdui-color-error-container));
+}

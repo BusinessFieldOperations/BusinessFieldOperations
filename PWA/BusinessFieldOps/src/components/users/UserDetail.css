@@ -1,0 +1,32 @@
+.user-detail {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding: 16px;
+}
+
+.user-detail__message {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+/* DetailStats is made for four numbers; here there are three. */
+.user-detail .detail-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Side by side when there is room, one per row on narrow screens. */
+.user-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.user-detail__actions > * {
+  flex: 1 1 12rem;
+}
